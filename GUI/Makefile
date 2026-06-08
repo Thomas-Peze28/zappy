@@ -28,7 +28,7 @@ NAME    =   zappy_gui
 
 CXXFLAGS = -Wextra -Wall $(addprefix -I, $(sort $(dir $(INCLUDE_GUI)))) -std=c++20
 
-LDLIBS   = -lm -lsfml-graphics -lsfml-window -lsfml-system
+LDLIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 .SILENT:
 
