@@ -12,9 +12,7 @@
     #include <iostream>
     #include <csignal>
 
-    #include <SFML/Graphics.hpp>
-    #include <SFML/Window.hpp>
-    #include <SFML/System.hpp>
+    #include "raylib.h"
 
     #include "RTCError.hpp"
     
