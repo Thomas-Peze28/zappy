@@ -17,13 +17,17 @@ SRC_GUI     =   src/main.cpp \
 				src/Core/Core.cpp \
 				src/Graphics/Camera/Camera.cpp \
 				src/Graphics/Window/Window.cpp \
-				src/Graphics/Model3D/Model3D.cpp
+				src/Graphics/Model3D/Model3D.cpp \
+				src/Graphics/Font/Font.cpp \
+				src/Graphics/Text/Text.cpp
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Include/RTCError.hpp \
 				src/Graphics/Camera/Camera.hpp \
 				src/Graphics/Window/Window.hpp \
-				src/Graphics/Model3D/Model3D.hpp
+				src/Graphics/Model3D/Model3D.hpp \
+				src/Graphics/Font/Font.hpp \
+				src/Graphics/Text/Text.hpp \
 
 CXX     =   g++
 
