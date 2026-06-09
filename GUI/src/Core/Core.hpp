@@ -18,6 +18,7 @@
     #include "Model3D.hpp"
     #include "Font.hpp"
     #include "Text.hpp"
+    #include "Input.hpp"
 
 namespace Zappy
 {
