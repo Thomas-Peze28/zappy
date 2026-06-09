@@ -16,6 +16,8 @@
     #include "Window.hpp"
     #include "Camera.hpp"
     #include "Model3D.hpp"
+    #include "Font.hpp"
+    #include "Text.hpp"
 
 namespace Zappy
 {

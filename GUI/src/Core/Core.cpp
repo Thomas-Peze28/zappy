@@ -35,8 +35,9 @@ int Zappy::Core::display()
 
     Zappy::Window window(1280, 720, "Zappy - 3D GRAPHICS", 60);
     Zappy::Camera camera({15.0f, 15.0f, 15.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f);
-
     Zappy::Model3D hexTile("assets/object/GrassTile.glb");
+    Zappy::Font mainFont("assets/fonts/Roboto-Black.ttf");
+    Zappy::Text title(mainFont, "EPITECH - ZAPPY", {500.0f, 20.0f}, 40.0f, DARKBLUE);
 
     // Dimensions de la carte
     int mapWidth = 10;
@@ -63,7 +64,8 @@ int Zappy::Core::display()
                     hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
                 }
             }
-            EndMode3D();
+            camera.endMode();
+            title.draw();
             window.drawFPS(10, 10);
         window.endDrawing();
     }
