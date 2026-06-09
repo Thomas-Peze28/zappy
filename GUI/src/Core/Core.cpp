@@ -52,6 +52,10 @@ int Zappy::Core::display()
 
     // Boucle principale
     while (!WindowShouldClose() && !_signal) {
+
+        if (Zappy::Input::isKeyPressed(KEY_SPACE))
+            std::cout << "Space key pressed..." << std::endl;
+
         camera.update(CAMERA_ORBITAL);
         window.beginDrawing();
             window.clear(SKYBLUE);

@@ -8,20 +8,6 @@
 #include "Input.hpp"
 
 /**
-* Initializes the Input class.
-**/
-Zappy::Input::Input()
-{
-}
-
-/**
-* Destroys the Input class.
-**/
-Zappy::Input::~Input()
-{
-}
-
-/**
 * Checks if a specific key is currently being pressed.
 * @param key The key code to check.
 * @return True if the key is pressed, false otherwise.
