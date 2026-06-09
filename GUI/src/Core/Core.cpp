@@ -36,13 +36,7 @@ int Zappy::Core::display()
     Zappy::Window window(1280, 720, "Zappy - 3D GRAPHICS", 60);
     Zappy::Camera camera({15.0f, 15.0f, 15.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f);
 
-    // Chargement du modèle 3D
-    Model hexTile = LoadModel("assets/object/GrassTile.glb");
-
-    // Calcul des dimensions réelles de la tuile
-    BoundingBox bbox = GetModelBoundingBox(hexTile);
-    float hexWidth = bbox.max.x - bbox.min.x;
-    float hexDepth = bbox.max.z - bbox.min.z;
+    Zappy::Model3D hexTile("assets/object/GrassTile.glb");
 
     // Dimensions de la carte
     int mapWidth = 10;
@@ -52,8 +46,8 @@ int Zappy::Core::display()
     float gap = 0.3f;
 
     // Calcul des dimensions totales de la grille pour pouvoir la centrer
-    float totalWidth = (mapWidth - 1) * (hexWidth + gap);
-    float totalDepth = (mapHeight - 1) * (hexDepth + gap);
+    float totalWidth = (mapWidth - 1) * (hexTile.getWidth() + gap);
+    float totalDepth = (mapHeight - 1) * (hexTile.getDepth() + gap);
 
     // Boucle principale
     while (!WindowShouldClose() && !_signal) {
@@ -64,16 +58,15 @@ int Zappy::Core::display()
             // Dessin de la grille de tuiles
             for (int y = 0; y < mapHeight; y++) {
                 for (int x = 0; x < mapWidth; x++) {
-                    float xPos = x * (hexWidth + gap) - (totalWidth / 2.0f);
-                    float zPos = y * (hexDepth + gap) - (totalDepth / 2.0f);
-                    DrawModel(hexTile, (Vector3){ xPos, 0.0f, zPos }, 1.0f, WHITE);
+                    float xPos = x * (hexTile.getWidth() + gap) - (totalWidth / 2.0f);
+                    float zPos = y * (hexTile.getDepth() + gap) - (totalDepth / 2.0f);
+                    hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
                 }
             }
             EndMode3D();
             window.drawFPS(10, 10);
         window.endDrawing();
     }
-    UnloadModel(hexTile);
     return 0;
 }
 

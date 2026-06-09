@@ -15,6 +15,7 @@
     #include "RTCError.hpp"
     #include "Window.hpp"
     #include "Camera.hpp"
+    #include "Model3D.hpp"
 
 namespace Zappy
 {
