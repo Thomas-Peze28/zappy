@@ -19,7 +19,8 @@ SRC_GUI     =   src/main.cpp \
 				src/Graphics/Window/Window.cpp \
 				src/Graphics/Model3D/Model3D.cpp \
 				src/Graphics/Font/Font.cpp \
-				src/Graphics/Text/Text.cpp
+				src/Graphics/Text/Text.cpp \
+				src/Graphics/Input/Input.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Include/RTCError.hpp \
@@ -28,6 +29,7 @@ INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Graphics/Model3D/Model3D.hpp \
 				src/Graphics/Font/Font.hpp \
 				src/Graphics/Text/Text.hpp \
+				src/Graphics/Input/Input.hpp \
 
 CXX     =   g++
 
