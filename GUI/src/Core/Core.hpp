@@ -19,6 +19,7 @@
     #include "Font.hpp"
     #include "Text.hpp"
     #include "Input.hpp"
+    #include "Sprite.hpp"
 
 namespace Zappy
 {

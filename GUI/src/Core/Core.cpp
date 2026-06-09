@@ -38,6 +38,7 @@ int Zappy::Core::display()
     Zappy::Model3D hexTile("assets/object/GrassTile.glb");
     Zappy::Font mainFont("assets/fonts/Roboto-Black.ttf");
     Zappy::Text title(mainFont, "EPITECH - ZAPPY", {500.0f, 20.0f}, 40.0f, DARKBLUE);
+    Zappy::Sprite sprite("assets/sprites/epitech.png");
 
     // Dimensions de la carte
     int mapWidth = 10;
@@ -70,6 +71,7 @@ int Zappy::Core::display()
             }
             camera.endMode();
             title.draw();
+            sprite.draw({10.0f, 50.0f, 0.0f}, 0.1f, WHITE);
             window.drawFPS(10, 10);
         window.endDrawing();
     }
