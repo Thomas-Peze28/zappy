@@ -10,12 +10,11 @@
 /**
 * Initializes a Font object by loading a font from the specified file path.
 * @param fontPath The path to the font file.
-* @param fontSize The size of the font.
 * @throws ErrorMajor if the font fails to load.
 **/
-Zappy::Font::Font(const std::string &fontPath, int fontSize)
+Zappy::Font::Font(const std::string &fontPath)
 {
-    _font = LoadFontEx(fontPath.c_str(), fontSize, NULL, 0);
+    _font = LoadFont(fontPath.c_str());
 
     if (_font.texture.id == 0) {
         ErrorMajor("Failed to load font: " + fontPath);
@@ -49,7 +48,7 @@ void Zappy::Font::draw(const std::string &text, Vector2 position, float fontSize
 * @param fontSize The size of the font.
 * @return A Vector2 containing the width and height of the text.
 **/
-Vector2 Zappy::Font::measure(const std::string &text, int fontSize) const
+Vector2 Zappy::Font::measure(const std::string &text, int fontSize, float spacing) const
 {
-    return MeasureTextEx(_font, text.c_str(), fontSize, 1.0f);
+    return MeasureTextEx(_font, text.c_str(), fontSize, spacing);
 }
