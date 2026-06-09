@@ -21,6 +21,7 @@
     #include "Input.hpp"
     #include "Sprite.hpp"
     #include "AudioDevice.hpp"
+    #include "Sound.hpp"
 
 namespace Zappy
 {
