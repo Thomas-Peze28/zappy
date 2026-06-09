@@ -21,6 +21,7 @@ SRC_GUI     =   src/main.cpp \
 				src/Graphics/Font/Font.cpp \
 				src/Graphics/Text/Text.cpp \
 				src/Graphics/Input/Input.cpp \
+				src/Graphics/Sprite/Sprite.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Include/RTCError.hpp \
@@ -30,6 +31,7 @@ INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Graphics/Font/Font.hpp \
 				src/Graphics/Text/Text.hpp \
 				src/Graphics/Input/Input.hpp \
+				src/Graphics/Sprite/Sprite.hpp \
 
 CXX     =   g++
 
