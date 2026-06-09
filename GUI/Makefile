@@ -14,11 +14,14 @@ CYAN=\033[0;36m
 RESET=\033[0m
 
 SRC_GUI     =   src/main.cpp \
-			src/Core/Core.cpp \
+				src/Core/Core.cpp \
+				src/Graphics/Camera/Camera.cpp \
+				src/Graphics/Window/Window.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
-			src/Include/RTCError.hpp \
-			
+				src/Include/RTCError.hpp \
+				src/Graphics/Camera/Camera.hpp \
+				src/Graphics/Window/Window.hpp \
 
 CXX     =   g++
 
