@@ -12,10 +12,9 @@
     #include <iostream>
     #include <csignal>
 
-    #include "raylib.h"
-
     #include "RTCError.hpp"
-    
+    #include "Window.hpp"
+    #include "Camera.hpp"
 
 namespace Zappy
 {
@@ -26,6 +25,7 @@ namespace Zappy
             ~Core() = default;
         
             int run();
+            int display();
 
             bool displayHelp(int argc, char *argv[]);
 
