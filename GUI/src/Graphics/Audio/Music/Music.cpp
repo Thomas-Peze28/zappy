@@ -39,6 +39,14 @@ void Zappy::Music::play() const
 }
 
 /**
+* Updates the music stream.
+**/
+void Zappy::Music::update() const
+{
+    UpdateMusicStream(_music);
+}
+
+/**
 * Stops the music if it is currently playing.
 **/
 void Zappy::Music::stop() const
