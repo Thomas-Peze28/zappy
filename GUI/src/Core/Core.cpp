@@ -40,6 +40,14 @@ int Zappy::Core::display()
     Zappy::Text title(mainFont, "EPITECH - ZAPPY", {500.0f, 20.0f}, 40.0f, DARKBLUE);
     Zappy::Sprite sprite("assets/sprites/epitech.png");
 
+    Zappy::AudioDevice audioDevice;
+    audioDevice.setMasterVolume(0.5f);
+
+    Zappy::Music music("assets/audio/music.mp3");
+    music.play();
+
+    Zappy::Sound sound("assets/audio/sound.mp3");
+
     // Dimensions de la carte
     int mapWidth = 10;
     int mapHeight = 10;
@@ -54,8 +62,12 @@ int Zappy::Core::display()
     // Boucle principale
     while (!WindowShouldClose() && !_signal) {
 
-        if (Zappy::Input::isKeyPressed(KEY_SPACE))
+        if (Zappy::Input::isKeyPressed(KEY_SPACE)) {
             std::cout << "Space key pressed..." << std::endl;
+            sound.play();
+        }
+
+        music.update();
 
         camera.update(CAMERA_ORBITAL);
         window.beginDrawing();
