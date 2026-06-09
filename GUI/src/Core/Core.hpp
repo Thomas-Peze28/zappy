@@ -20,6 +20,7 @@
     #include "Text.hpp"
     #include "Input.hpp"
     #include "Sprite.hpp"
+    #include "AudioDevice.hpp"
 
 namespace Zappy
 {
