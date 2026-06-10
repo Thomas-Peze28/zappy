@@ -28,6 +28,7 @@ SRC_GUI     =   src/main.cpp \
 				src/Engine/Engine.cpp \
 				src/Game/Game.cpp \
 				src/Game/Map/Map.cpp \
+				src/Network/Network.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Include/RTCError.hpp \
@@ -44,6 +45,7 @@ INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Engine/Engine.hpp \
 				src/Game/Game.hpp \
 				src/Game/Map/Map.hpp \
+				src/Network/Network.hpp \
 
 CXX     =   g++
 
