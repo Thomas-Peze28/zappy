@@ -28,68 +28,6 @@ bool Zappy::Core::displayHelp(int argc, char *argv[])
         }
     return false;
 }
-
-int Zappy::Core::display()
-{
-    std::cout << "Display." << std::endl;
-
-    Zappy::Window window(1280, 720, "Zappy - 3D GRAPHICS", 60);
-    Zappy::Camera camera({15.0f, 15.0f, 15.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f);
-    Zappy::Model3D hexTile("assets/object/GrassTile.glb");
-    Zappy::Font mainFont("assets/fonts/Roboto-Black.ttf");
-    Zappy::Text title(mainFont, "EPITECH - ZAPPY", {500.0f, 20.0f}, 40.0f, DARKBLUE);
-    Zappy::Sprite sprite("assets/sprites/epitech.png");
-
-    Zappy::AudioDevice audioDevice;
-    audioDevice.setMasterVolume(0.5f);
-
-    Zappy::Music music("assets/audio/music.mp3");
-    music.play();
-
-    Zappy::Sound sound("assets/audio/sound.mp3");
-
-    // Dimensions de la carte
-    int mapWidth = 10;
-    int mapHeight = 10;
-
-    // Espacement entre chaque tuile pour des couloirs de vide égaux
-    float gap = 0.3f;
-
-    // Calcul des dimensions totales de la grille pour pouvoir la centrer
-    float totalWidth = (mapWidth - 1) * (hexTile.getWidth() + gap);
-    float totalDepth = (mapHeight - 1) * (hexTile.getDepth() + gap);
-
-    // Boucle principale
-    while (!WindowShouldClose() && !_signal) {
-
-        if (Zappy::Input::isKeyPressed(KEY_SPACE)) {
-            std::cout << "Space key pressed..." << std::endl;
-            sound.play();
-        }
-
-        music.update();
-
-        camera.update();
-        window.beginDrawing();
-            window.clear(SKYBLUE);
-            camera.beginMode();    
-            // Dessin de la grille de tuiles
-            for (int y = 0; y < mapHeight; y++) {
-                for (int x = 0; x < mapWidth; x++) {
-                    float xPos = x * (hexTile.getWidth() + gap) - (totalWidth / 2.0f);
-                    float zPos = y * (hexTile.getDepth() + gap) - (totalDepth / 2.0f);
-                    hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
-                }
-            }
-            camera.endMode();
-            title.draw();
-            sprite.draw({10.0f, 50.0f, 0.0f}, 0.1f, WHITE);
-            window.drawFPS(10, 10);
-        window.endDrawing();
-    }
-    return 0;
-}
-
 /**
 * Handles the signal for interrupting the Zappy GUI.
 * @param signal The signal received.
@@ -108,8 +46,19 @@ void Zappy::Core::signalHandler(int signal)
 int Zappy::Core::run()
 {
     std::signal(SIGINT, signalHandler);
-    std::cout << "Zappy GUI is running with Raylib..." << std::endl;
 
-    display();
+    Zappy::Engine display(1280, 720, "Zappy - GUI");
+    Zappy::Game game;
+
+    game.getMap().resize(50, 50);
+
+    while (display.isOpen() && !_signal) {
+
+        if (display.handleInputs() == 1) {
+            _signal = true;
+        }
+
+        display.render(game);
+    }
     return 0;
 }

@@ -25,6 +25,9 @@ SRC_GUI     =   src/main.cpp \
 				src/Graphics/Audio/AudioDevice/AudioDevice.cpp \
 				src/Graphics/Audio/Sound/Sound.cpp \
 				src/Graphics/Audio/Music/Music.cpp \
+				src/Engine/Engine.cpp \
+				src/Game/Game.cpp \
+				src/Game/Map/Map.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Include/RTCError.hpp \
@@ -38,6 +41,9 @@ INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Graphics/Audio/AudioDevice/AudioDevice.hpp \
 				src/Graphics/Audio/Sound/Sound.hpp \
 				src/Graphics/Audio/Music/Music.hpp \
+				src/Engine/Engine.hpp \
+				src/Game/Game.hpp \
+				src/Game/Map/Map.hpp \
 
 CXX     =   g++
 

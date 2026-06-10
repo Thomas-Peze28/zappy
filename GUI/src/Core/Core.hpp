@@ -13,16 +13,8 @@
     #include <csignal>
 
     #include "RTCError.hpp"
-    #include "Window.hpp"
-    #include "Camera.hpp"
-    #include "Model3D.hpp"
-    #include "Font.hpp"
-    #include "Text.hpp"
-    #include "Input.hpp"
-    #include "Sprite.hpp"
-    #include "AudioDevice.hpp"
-    #include "Sound.hpp"
-    #include "Music.hpp"
+
+    #include "Engine.hpp"
 
 namespace Zappy
 {
@@ -33,7 +25,6 @@ namespace Zappy
             ~Core() = default;
         
             int run();
-            int display();
 
             bool displayHelp(int argc, char *argv[]);
 
