@@ -69,7 +69,7 @@ int Zappy::Core::display()
 
         music.update();
 
-        camera.update(CAMERA_ORBITAL);
+        camera.update();
         window.beginDrawing();
             window.clear(SKYBLUE);
             camera.beginMode();    

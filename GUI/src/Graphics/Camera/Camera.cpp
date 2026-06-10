@@ -17,6 +17,7 @@ Zappy::Camera::Camera()
     _camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
     _camera.fovy = 45.0f;
     _camera.projection = CAMERA_PERSPECTIVE;
+    _mode = CAMERA_ORBITAL;
 }
 
 /**
@@ -33,15 +34,16 @@ Zappy::Camera::Camera(Vector3 position, Vector3 target, Vector3 up, float fovy)
     _camera.up = up;
     _camera.fovy = fovy;
     _camera.projection = CAMERA_PERSPECTIVE;
+    _mode = CAMERA_ORBITAL;
 }
 
 /**
 * Updates the camera's position and orientation.
 * @param mode The update mode.
 **/
-void Zappy::Camera::update(int mode)
+void Zappy::Camera::update()
 {
-    UpdateCamera(&_camera, mode);
+    UpdateCamera(&_camera, _mode);
 }
 
 /**
@@ -79,6 +81,16 @@ void Zappy::Camera::setTarget(Vector3 target)
 }
 
 /**
+* Sets the camera mode.
+* @param mode The new mode of the camera.
+**/
+void Zappy::Camera::setMode(int mode)
+{
+    _mode = mode;
+}
+
+
+/**
 * Gets the position of the camera.
 * @return The position of the camera.
 **/
@@ -94,4 +106,13 @@ Vector3 Zappy::Camera::getPosition() const
 Vector3 Zappy::Camera::getTarget() const
 {
     return _camera.target;
+}
+
+/**
+* Gets the mode of the camera.
+* @return The mode of the camera.
+**/
+int Zappy::Camera::getMode() const
+{
+    return _mode;
 }

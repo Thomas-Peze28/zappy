@@ -22,18 +22,20 @@ namespace Zappy
             Camera(Vector3 position, Vector3 target, Vector3 up, float fovy);
             ~Camera() = default;
 
-            void update(int mode);
+            void update();
 
             void beginMode() const;
             void endMode() const;
 
             void setPosition(Vector3 position);
             void setTarget(Vector3 target);
+            void setMode(int mode);
             Vector3 getPosition() const;
             Vector3 getTarget() const;
+            int getMode() const;
 
         private:
             Camera3D _camera;
+            int _mode;
     };
 };
-
