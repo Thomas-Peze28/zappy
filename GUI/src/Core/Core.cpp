@@ -50,7 +50,7 @@ int Zappy::Core::run()
     Zappy::Engine display(1280, 720, "Zappy - GUI");
     Zappy::Game game;
 
-    game.getMap().resize(50, 50);
+    game.getMap().resize(5, 5);
 
     while (display.isOpen() && !_signal) {
 
