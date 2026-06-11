@@ -113,6 +113,13 @@ int Zappy::Core::run()
         while (network.hasMessage()) {
             std::string message = network.popMessage();
             std::cout << "Received: " << message << std::endl;
+            if (message.starts_with("msz")) {
+                int width;
+                int height;
+                if (sscanf(message.c_str(), "msz %d %d", &width, &height) == 2) {
+                    game.getMap().resize(width, height);
+                }
+            } 
         }
         display.render(game);
     }
