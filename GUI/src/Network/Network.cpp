@@ -23,3 +23,13 @@ Zappy::Network::Network(std::string host, int port)
     _host = std::move(host);
     _port = port;
 }
+
+/**
+* Cleans up the Network resources.
+**/
+Zappy::Network::~Network()
+{
+    if (_fd > 0) {
+        close(_fd);
+    }
+}
