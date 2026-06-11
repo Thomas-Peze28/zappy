@@ -97,9 +97,9 @@ int Zappy::Core::run()
         return 84;
     }
 
-    std::cout << "Connecting to " << _host << " on port " << _port << "..." << std::endl;
-
     Zappy::Network network(_host, _port);
+    network.connectToServer();
+
     Zappy::Engine display(1280, 720, "Zappy - GUI");
     Zappy::Game game;
 
@@ -110,6 +110,7 @@ int Zappy::Core::run()
         if (display.handleInputs() == 1) {
             _signal = true;
         }
+        network.update();
         display.render(game);
     }
     return 0;
