@@ -15,13 +15,15 @@
     #include "RTCError.hpp"
 
     #include "Engine.hpp"
+    #include "Game.hpp"
+    #include "Network.hpp"
 
 namespace Zappy
 {
     class Core
     {
         public:
-            Core() = default;
+            Core(int argc, char *argv[]);
             ~Core() = default;
         
             int run();
@@ -31,7 +33,13 @@ namespace Zappy
             static void signalHandler(int signal);
             static bool _signal;
 
+            bool parseArguments(int argc, char *argv[]);
+
         private:
+            int _argc;
+            char **_argv;
+            int _port;
+            std::string _host;
     };
 };
 

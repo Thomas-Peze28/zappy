@@ -10,6 +10,20 @@
 bool Zappy::Core::_signal = false;
 
 /**
+* Initializes the Core.
+* @param argc The number of command-line arguments.
+* @param argv The array of command-line arguments.
+**/
+Zappy::Core::Core(int argc, char *argv[]) : _argc(argc), _argv(argv)
+{
+    if (displayHelp(argc, argv)) {
+        std::exit(0);
+    }
+    _port = -1;
+    _host = "";
+}
+
+/**
 * Displays help information for the Zappy GUI.
 * @param argc The number of command-line arguments.
 * @param argv The array of command-line arguments.
@@ -17,17 +31,49 @@ bool Zappy::Core::_signal = false;
 **/
 bool Zappy::Core::displayHelp(int argc, char *argv[])
 {
-    if (argc != 2) {
-        std::cout << "USAGE: ./zappy_gui -p <port> -h <host>" << std::endl;
-        return true;
-    }
-    for (unsigned int i = 0; argv[i] != NULL; i++)
-        if (std::string(argv[i]) == "-h" || std::string(argv[i]) == "--help") {
+    for (int i = 0; i < argc; i++)
+        if (std::string(argv[i]) == "--help") {
             std::cout << "USAGE: ./zappy_gui -p <port> -h <host>" << std::endl;
             return true;
         }
     return false;
 }
+
+/**
+* Parses the command-line arguments for the Zappy GUI.
+* @param argc The number of command-line arguments.
+* @param argv The array of command-line arguments.
+* @return True if the arguments were parsed successfully, false otherwise.
+**/
+bool Zappy::Core::parseArguments(int argc, char *argv[])
+{
+    for (int i = 1; i < argc; i++) {
+        std::string arg(argv[i]);
+
+        if (arg == "-p" || arg == "--port") {
+            if (i + 1 >= argc || std::string(argv[i + 1]).starts_with("-")) {
+                throw ErrorMajor("Error: -p option requires a port number.");
+                return false;
+            }
+            _port = std::atoi(argv[++i]);
+        } else if (arg == "-h" || arg == "--host") {
+            if (i + 1 >= argc || std::string(argv[i + 1]).starts_with("-")) {
+                throw ErrorMajor("Error: -h option requires a host address.");
+                return false;
+            }
+            _host = argv[++i];
+        } else {
+            throw ErrorMajor("Error: Unknown option '" + arg + "'");
+            return false;
+        }
+    }
+    if (_port == -1 || _host.empty()) {
+        throw ErrorMajor("Error: Missing required options.\nUSAGE: ./zappy_gui -p <port> -h <host>");
+        return false;
+    }
+    return true;
+}
+
 /**
 * Handles the signal for interrupting the Zappy GUI.
 * @param signal The signal received.
@@ -47,6 +93,13 @@ int Zappy::Core::run()
 {
     std::signal(SIGINT, signalHandler);
 
+    if (!parseArguments(_argc, _argv)) {
+        return 84;
+    }
+
+    std::cout << "Connecting to " << _host << " on port " << _port << "..." << std::endl;
+
+    Zappy::Network network(_host, _port);
     Zappy::Engine display(1280, 720, "Zappy - GUI");
     Zappy::Game game;
 
@@ -57,7 +110,6 @@ int Zappy::Core::run()
         if (display.handleInputs() == 1) {
             _signal = true;
         }
-
         display.render(game);
     }
     return 0;
