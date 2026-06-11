@@ -23,7 +23,7 @@ Zappy::Model3D::Model3D(const std::string &filePath)
     if (_model.meshes == nullptr || _model.meshCount == 0) {
         _width = 0.0f;
         _depth = 0.0f;
-        ErrorMajor("Failed to load model: " + filePath);
+        throw ErrorMajor("Failed to load model: " + filePath);
     }
 
     BoundingBox bbox = GetModelBoundingBox(_model);

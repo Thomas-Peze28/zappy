@@ -15,7 +15,7 @@ Zappy::AudioDevice::AudioDevice()
     InitAudioDevice();
 
     if (!IsAudioDeviceReady()) {
-        ErrorMajor("Failed to initialize audio device.");
+        throw ErrorMajor("Failed to initialize audio device.");
     }
 }
 

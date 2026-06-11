@@ -18,7 +18,7 @@ Zappy::Music::Music(const std::string &filePath)
     _music = LoadMusicStream(filePath.c_str());
 
     if (_music.frameCount == 0) {
-        ErrorMajor("Failed to load music: " + filePath);
+        throw ErrorMajor("Failed to load music: " + filePath);
     }
 }
 

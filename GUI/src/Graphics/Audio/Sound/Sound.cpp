@@ -18,7 +18,7 @@ Zappy::Sound::Sound(const std::string &filePath)
     _sound = LoadSound(filePath.c_str());
 
     if (_sound.frameCount == 0) {
-        ErrorMajor("Failed to load sound: " + filePath);
+        throw ErrorMajor("Failed to load sound: " + filePath);
     }
 }
 

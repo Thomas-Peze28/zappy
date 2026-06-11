@@ -17,7 +17,7 @@ Zappy::Font::Font(const std::string &fontPath)
     _font = LoadFont(fontPath.c_str());
 
     if (_font.texture.id == 0) {
-        ErrorMajor("Failed to load font: " + fontPath);
+        throw ErrorMajor("Failed to load font: " + fontPath);
     }
 }
 

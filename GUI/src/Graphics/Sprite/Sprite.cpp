@@ -22,7 +22,7 @@ Zappy::Sprite::Sprite(const std::string &filePath)
     if (_texture.id == 0) {
         _width = 0.0f;
         _height = 0.0f;
-        ErrorMajor("Failed to load texture: " + filePath);
+        throw ErrorMajor("Failed to load texture: " + filePath);
     }
 
     _width = (float)_texture.width;
