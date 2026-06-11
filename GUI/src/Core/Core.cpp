@@ -107,10 +107,13 @@ int Zappy::Core::run()
 
     while (display.isOpen() && !_signal) {
 
-        if (display.handleInputs() == 1) {
+        if (display.handleInputs() == 1)
             _signal = true;
-        }
         network.update();
+        while (network.hasMessage()) {
+            std::string message = network.popMessage();
+            std::cout << "Received: " << message << std::endl;
+        }
         display.render(game);
     }
     return 0;
