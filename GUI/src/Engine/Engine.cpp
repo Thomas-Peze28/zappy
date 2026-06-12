@@ -96,37 +96,46 @@ void Zappy::Engine::renderResource(const Zappy::Tile &tile, float x, float y, fl
             float xOffset = 0.0f;
             float zOffset = 0.0f;
 
+            float scale = 0.00f;
+
             switch (resourceType) {
                 case Zappy::RESSOURCE::FOOD:      
                     xOffset = 0.0f;     
-                    zOffset = 0.0f;       
+                    zOffset = 0.0f;    
+                    scale = 0.015f;   
                     break;
                 case Zappy::RESSOURCE::LINEMATE:  
                     xOffset = radius;   
                     zOffset = 0.0f;       
+                    scale = 0.5f;   
                     break;
                 case Zappy::RESSOURCE::DERAUMERE: 
                     xOffset = halfRad;  
                     zOffset = heightRad;  
+                    scale = 1.0f;   
                     break;
                 case Zappy::RESSOURCE::SIBUR:     
-                    xOffset = -halfRad; 
-                    zOffset = heightRad;  
+                    xOffset = -halfRad;
+                    zOffset = heightRad;
+                    scale = 0.5f;
                     break;
                 case Zappy::RESSOURCE::MENDIANE:  
                     xOffset = -radius;  
-                    zOffset = 0.0f;       
+                    zOffset = 0.0f;
+                    scale = 0.02f;
                     break;
                 case Zappy::RESSOURCE::PHIRAS:    
                     xOffset = -halfRad; 
                     zOffset = -heightRad; 
+                    scale = 0.1f;
                     break;
                 case Zappy::RESSOURCE::THYSTAME:  
-                    xOffset = halfRad;  
-                    zOffset = -heightRad; 
+                    xOffset = halfRad;
+                    zOffset = -heightRad;
+                    scale = 0.05f;
                     break;
             }
-            modelPtr->draw({x + xOffset, y, z + zOffset}, 0.02f, WHITE);
+            modelPtr->draw({x + xOffset, y, z + zOffset}, scale, WHITE);
         }
     }
 }
