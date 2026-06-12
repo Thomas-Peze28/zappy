@@ -40,6 +40,7 @@ namespace Zappy
 
             int handleCommands(std::string message, Game &game, Zappy::Network &server);
             int msz(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int bct(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;
