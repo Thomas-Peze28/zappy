@@ -41,6 +41,14 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
 {
     _audioDevice.setMasterVolume(0.5f);
     _music.play();
+
+    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
+    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>("assets/object/Linemate.glb");
+    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>("assets/object/Deraumere.glb");
+    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>("assets/object/Sibur.glb");
+    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>("assets/object/Mendiane.glb");
+    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
+    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
 }
 
 /**
@@ -95,7 +103,7 @@ void Zappy::Engine::renderTile(const Zappy::Game &game) const
                     
                     float xOffset = (static_cast<float>(tile.getResource(resourceType)) - 1) * 0.2f - 0.2f;
                     
-                    modelPtr->draw({xPos + xOffset, 0.2f, zPos}, 0.5f, WHITE);
+                    modelPtr->draw({xPos + xOffset, 1.0f, zPos}, 1.0f, WHITE);
                 }
             }
         }
