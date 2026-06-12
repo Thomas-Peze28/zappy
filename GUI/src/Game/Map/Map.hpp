@@ -30,6 +30,7 @@ namespace Zappy
 
             void setTileContent(int x, int y, const Tile &content);
             const Tile &getTile(int x, int y) const;
+            Tile &getTile(int x, int y);
 
             int getWidth() const;
             int getHeight() const;

@@ -70,6 +70,20 @@ const Zappy::Tile &Zappy::Map::getTile(int x, int y) const
 }
 
 /**
+* @brief Gets the content of a tile at the specified coordinates.
+* @param x The x-coordinate of the tile.
+* @param y The y-coordinate of the tile.
+* @return A reference to the content of the tile.
+**/
+Zappy::Tile &Zappy::Map::getTile(int x, int y)
+{
+    if (x < 0 || x >= _width || y < 0 || y >= _height) {
+        throw ErrorMinor("Tile coordinates out of bounds");
+    }
+    return _tiles[y][x];
+}
+
+/**
 * @brief Gets the width of the map.
 * @return The width of the map.
 **/
