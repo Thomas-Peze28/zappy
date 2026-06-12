@@ -104,6 +104,13 @@ int Zappy::Core::run()
     Zappy::Game game;
 
     game.getMap().resize(5, 5);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::FOOD, 3);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::MENDIANE, 3);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::PHIRAS, 3);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::THYSTAME, 3);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::SIBUR, 3);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::DERAUMERE, 3);
+    game.getMap().getTile(2, 2).setResource(Zappy::RESSOURCE::LINEMATE, 3);
 
     while (display.isOpen() && !_signal) {
 
