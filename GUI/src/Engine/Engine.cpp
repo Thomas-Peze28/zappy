@@ -75,6 +75,12 @@ int Zappy::Engine::handleInputs()
     {
         _sound.play();
     }
+
+    if (Zappy::Input::isKeyPressed(KEY_F))
+    {
+        _window.toggleFullscreen();
+    }
+
     return 0;
 }
 
