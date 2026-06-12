@@ -45,6 +45,7 @@ INCLUDE_GAME =  src/Game/Game.hpp \
 
 SRC_GUI     =   src/main.cpp \
 				src/Core/Core.cpp \
+				src/Core/Command.cpp \
 				$(SRC_GRAPHICS) \
 				$(SRC_GAME) \
 				src/Engine/Engine.cpp \

@@ -49,4 +49,3 @@ namespace Zappy
             std::string _host;
     };
 };
-
