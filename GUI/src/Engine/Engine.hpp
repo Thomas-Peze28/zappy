@@ -14,6 +14,7 @@
     #include <vector>
     #include <unordered_map>
     #include <memory>
+    #include <cmath>
 
     #include "RTCError.hpp"
 
@@ -43,6 +44,7 @@ namespace Zappy
             int handleInputs();
             void render(const Zappy::Game &game);
             void renderTile(const Zappy::Game &game) const;
+            void renderResource(const Zappy::Tile &tile, float x, float y, float z) const;
         
         private:
             void render3D(const Zappy::Game &game);

@@ -8,8 +8,8 @@
 #include "Engine.hpp"
 
 /**
-* Initializes the Engine with default parameters.
-**/
+ * Initializes the Engine with default parameters.
+ **/
 Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 {
     _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
@@ -22,11 +22,11 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 }
 
 /**
-* Initializes the Engine with custom parameters.
-* @param width The width of the window.
-* @param height The height of the window.
-* @param title The title of the window.
-**/
+ * Initializes the Engine with custom parameters.
+ * @param width The width of the window.
+ * @param height The height of the window.
+ * @param title The title of the window.
+ **/
 Zappy::Engine::Engine(int width, int height, const std::string &title)
     : _audioDevice(),
       _window(width, height, title, 60),
@@ -52,30 +52,89 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
 }
 
 /**
-* Checks if the engine window is open.
-* @return True if the window is open, false otherwise.
-**/
+ * Checks if the engine window is open.
+ * @return True if the window is open, false otherwise.
+ **/
 bool Zappy::Engine::isOpen() const
 {
     return _window.isOpen();
 }
 
 /**
-* Handles user inputs.
-* @return 1 if the user wants to quit, 0 otherwise.
-**/
+ * Handles user inputs.
+ * @return 1 if the user wants to quit, 0 otherwise.
+ **/
 int Zappy::Engine::handleInputs()
 {
-    if (Zappy::Input::isKeyPressed(KEY_ESCAPE)) {
+    if (Zappy::Input::isKeyPressed(KEY_ESCAPE))
+    {
         return 1;
     }
 
-    if (Zappy::Input::isKeyPressed(KEY_SPACE)) {
+    if (Zappy::Input::isKeyPressed(KEY_SPACE))
+    {
         _sound.play();
     }
     return 0;
 }
 
+/**
+* Renders the resources on a tile.
+* @param tile The tile to render resources for.
+* @param x The x-coordinate of the tile.
+* @param y The y-coordinate of the tile.
+* @param z The z-coordinate of the tile.
+**/
+void Zappy::Engine::renderResource(const Zappy::Tile &tile, float x, float y, float z) const
+{
+    for (const auto &[resourceType, modelPtr] : _resourceModels) {
+        if (tile.getResource(resourceType) > 0) {
+            float radius = 0.65f; 
+            float halfRad = radius * sinf(PI / 6.0f);
+            float heightRad = radius * cosf(PI / 6.0f);
+
+            float xOffset = 0.0f;
+            float zOffset = 0.0f;
+
+            switch (resourceType) {
+                case Zappy::RESSOURCE::FOOD:      
+                    xOffset = 0.0f;     
+                    zOffset = 0.0f;       
+                    break;
+                case Zappy::RESSOURCE::LINEMATE:  
+                    xOffset = radius;   
+                    zOffset = 0.0f;       
+                    break;
+                case Zappy::RESSOURCE::DERAUMERE: 
+                    xOffset = halfRad;  
+                    zOffset = heightRad;  
+                    break;
+                case Zappy::RESSOURCE::SIBUR:     
+                    xOffset = -halfRad; 
+                    zOffset = heightRad;  
+                    break;
+                case Zappy::RESSOURCE::MENDIANE:  
+                    xOffset = -radius;  
+                    zOffset = 0.0f;       
+                    break;
+                case Zappy::RESSOURCE::PHIRAS:    
+                    xOffset = -halfRad; 
+                    zOffset = -heightRad; 
+                    break;
+                case Zappy::RESSOURCE::THYSTAME:  
+                    xOffset = halfRad;  
+                    zOffset = -heightRad; 
+                    break;
+            }
+            modelPtr->draw({x + xOffset, y, z + zOffset}, 0.02f, WHITE);
+        }
+    }
+}
+
+/**
+* Renders a tiles with resources in the game.
+* @param game The game instance to render.
+**/
 void Zappy::Engine::renderTile(const Zappy::Game &game) const
 {
     const Zappy::Map &map = game.getMap();
@@ -88,41 +147,35 @@ void Zappy::Engine::renderTile(const Zappy::Game &game) const
     float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
     float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
 
-    for (int y = 0; y < mapHeight; y++) {
-        for (int x = 0; x < mapWidth; x++) {
+    for (int y = 0; y < mapHeight; y++)
+    {
+        for (int x = 0; x < mapWidth; x++)
+        {
             float xPos = x * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
             float zPos = y * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
-            
+
             _hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
 
             const Zappy::Tile &tile = map.getTile(x, y);
 
-            for (const auto& [resourceType, modelPtr] : _resourceModels) {
-                
-                if (tile.getResource(resourceType) > 0) {
-                    
-                    float xOffset = (static_cast<float>(tile.getResource(resourceType)) - 1) * 0.2f - 0.2f;
-                    
-                    modelPtr->draw({xPos + xOffset, 1.0f, zPos}, 1.0f, WHITE);
-                }
-            }
+            renderResource(tile, xPos, 0.15f, zPos);
         }
     }
 }
 
 /**
-* Renders the 3D game scene.
-* @param game The game instance to render.
-**/
+ * Renders the 3D game scene.
+ * @param game The game instance to render.
+ **/
 void Zappy::Engine::render3D(const Zappy::Game &game)
 {
     renderTile(game);
 }
 
 /**
-* Renders the 2D game scene.
-* @param game The game instance to render.
-**/
+ * Renders the 2D game scene.
+ * @param game The game instance to render.
+ **/
 void Zappy::Engine::render2D(const Zappy::Game &)
 {
     _title.draw();
@@ -131,19 +184,19 @@ void Zappy::Engine::render2D(const Zappy::Game &)
 }
 
 /**
-* Renders the game scene.
-* @param game The game instance to render.
-**/
+ * Renders the game scene.
+ * @param game The game instance to render.
+ **/
 void Zappy::Engine::render(const Zappy::Game &game)
 {
     _music.update();
     _camera.update();
 
     _window.beginDrawing();
-        _window.clear(SKYBLUE);
-        _camera.beginMode();
-        render3D(game);
-        _camera.endMode();
-        render2D(game);
+    _window.clear(SKYBLUE);
+    _camera.beginMode();
+    render3D(game);
+    _camera.endMode();
+    render2D(game);
     _window.endDrawing();
 }
