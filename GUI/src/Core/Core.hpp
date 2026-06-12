@@ -11,6 +11,7 @@
     #include <string>
     #include <iostream>
     #include <csignal>
+    #include <map>
 
     #include "RTCError.hpp"
 
@@ -23,6 +24,8 @@ namespace Zappy
     class Core
     {
         public:
+            using CommandHandler = int (Core::*)(std::string, Game&);
+
             Core(int argc, char *argv[]);
             ~Core() = default;
         
@@ -34,6 +37,9 @@ namespace Zappy
             static bool _signal;
 
             bool parseArguments(int argc, char *argv[]);
+
+            int handleCommands(std::string message, Game &game);
+            int msz(std::string message, Zappy::Game &game);
 
         private:
             int _argc;
