@@ -68,11 +68,7 @@ int Zappy::Engine::handleInputs()
     return 0;
 }
 
-/**
-* Renders the 3D game scene.
-* @param game The game instance to render.
-**/
-void Zappy::Engine::render3D(const Zappy::Game &game)
+void Zappy::Engine::renderTile(const Zappy::Game &game) const
 {
     const Zappy::Map &map = game.getMap();
     int mapWidth = map.getWidth();
@@ -90,8 +86,29 @@ void Zappy::Engine::render3D(const Zappy::Game &game)
             float zPos = y * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
             
             _hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
+
+            const Zappy::Tile &tile = map.getTile(x, y);
+
+            for (const auto& [resourceType, modelPtr] : _resourceModels) {
+                
+                if (tile.getResource(resourceType) > 0) {
+                    
+                    float xOffset = (static_cast<float>(tile.getResource(resourceType)) - 1) * 0.2f - 0.2f;
+                    
+                    modelPtr->draw({xPos + xOffset, 0.2f, zPos}, 0.5f, WHITE);
+                }
+            }
         }
     }
+}
+
+/**
+* Renders the 3D game scene.
+* @param game The game instance to render.
+**/
+void Zappy::Engine::render3D(const Zappy::Game &game)
+{
+    renderTile(game);
 }
 
 /**

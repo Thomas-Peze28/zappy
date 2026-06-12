@@ -42,6 +42,7 @@ namespace Zappy
             bool isOpen() const;
             int handleInputs();
             void render(const Zappy::Game &game);
+            void renderTile(const Zappy::Game &game) const;
         
         private:
             void render3D(const Zappy::Game &game);
