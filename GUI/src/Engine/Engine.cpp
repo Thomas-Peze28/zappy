@@ -60,6 +60,14 @@ bool Zappy::Engine::isOpen() const
     return _window.isOpen();
 }
 
+void Zappy::Engine::nextCameraMode()
+{
+    if (_camera.getMode() == CAMERA_FREE)
+        _camera.setMode(CAMERA_ORBITAL);
+    else
+        _camera.setMode(CAMERA_FREE);
+}
+
 /**
  * Handles user inputs.
  * @return 1 if the user wants to quit, 0 otherwise.
@@ -79,6 +87,11 @@ int Zappy::Engine::handleInputs()
     if (Zappy::Input::isKeyPressed(KEY_F))
     {
         _window.toggleFullscreen();
+    }
+
+    if (Zappy::Input::isKeyPressed(KEY_C))
+    {
+        nextCameraMode();
     }
 
     return 0;
