@@ -12,6 +12,13 @@
 **/
 Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 {
+    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
+    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>("assets/object/Linemate.glb");
+    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>("assets/object/Deraumere.glb");
+    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>("assets/object/Sibur.glb");
+    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>("assets/object/Mendiane.glb");
+    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
+    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
 }
 
 /**

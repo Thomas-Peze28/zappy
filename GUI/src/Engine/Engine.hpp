@@ -11,6 +11,9 @@
     #include <string>
     #include <iostream>
     #include <csignal>
+    #include <vector>
+    #include <unordered_map>
+    #include <memory>
 
     #include "RTCError.hpp"
 
@@ -25,6 +28,7 @@
     #include "Sound.hpp"
     #include "Music.hpp"
     #include "Game.hpp"
+    #include "Tile.hpp"
 
 namespace Zappy
 {
@@ -48,6 +52,8 @@ namespace Zappy
             Zappy::Camera _camera;
             
             Zappy::Model3D _hexTile;
+            std::unordered_map<Zappy::RESSOURCE, std::unique_ptr<Zappy::Model3D>> _resourceModels;
+
             Zappy::Font _mainFont;
             Zappy::Text _title;
             Zappy::Sprite _sprite;
