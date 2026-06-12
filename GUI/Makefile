@@ -13,9 +13,7 @@ MAGENTA=\033[0;35m
 CYAN=\033[0;36m
 RESET=\033[0m
 
-SRC_GUI     =   src/main.cpp \
-				src/Core/Core.cpp \
-				src/Graphics/Camera/Camera.cpp \
+SRC_GRAPHICS =  src/Graphics/Camera/Camera.cpp \
 				src/Graphics/Window/Window.cpp \
 				src/Graphics/Model3D/Model3D.cpp \
 				src/Graphics/Font/Font.cpp \
@@ -25,26 +23,38 @@ SRC_GUI     =   src/main.cpp \
 				src/Graphics/Audio/AudioDevice/AudioDevice.cpp \
 				src/Graphics/Audio/Sound/Sound.cpp \
 				src/Graphics/Audio/Music/Music.cpp \
-				src/Engine/Engine.cpp \
-				src/Game/Game.cpp \
+
+INCLUDE_GRAPHICS =   src/Graphics/Camera/Camera.hpp \
+					 src/Graphics/Window/Window.hpp \
+					 src/Graphics/Model3D/Model3D.hpp \
+					 src/Graphics/Font/Font.hpp \
+					 src/Graphics/Text/Text.hpp \
+					 src/Graphics/Input/Input.hpp \
+					 src/Graphics/Sprite/Sprite.hpp \
+					 src/Graphics/Audio/AudioDevice/AudioDevice.hpp \
+					 src/Graphics/Audio/Sound/Sound.hpp \
+					 src/Graphics/Audio/Music/Music.hpp \
+
+SRC_GAME	=   src/Game/Game.cpp \
+				src/Game/Tile/Tile.cpp \
 				src/Game/Map/Map.cpp \
+
+INCLUDE_GAME =  src/Game/Game.hpp \
+				src/Game/Tile/Tile.hpp \
+				src/Game/Map/Map.hpp \
+
+SRC_GUI     =   src/main.cpp \
+				src/Core/Core.cpp \
+				$(SRC_GRAPHICS) \
+				$(SRC_GAME) \
+				src/Engine/Engine.cpp \
 				src/Network/Network.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
 				src/Include/RTCError.hpp \
-				src/Graphics/Camera/Camera.hpp \
-				src/Graphics/Window/Window.hpp \
-				src/Graphics/Model3D/Model3D.hpp \
-				src/Graphics/Font/Font.hpp \
-				src/Graphics/Text/Text.hpp \
-				src/Graphics/Input/Input.hpp \
-				src/Graphics/Sprite/Sprite.hpp \
-				src/Graphics/Audio/AudioDevice/AudioDevice.hpp \
-				src/Graphics/Audio/Sound/Sound.hpp \
-				src/Graphics/Audio/Music/Music.hpp \
+				$(INCLUDE_GRAPHICS) \
+				$(INCLUDE_GAME) \
 				src/Engine/Engine.hpp \
-				src/Game/Game.hpp \
-				src/Game/Map/Map.hpp \
 				src/Network/Network.hpp \
 
 CXX     =   g++
