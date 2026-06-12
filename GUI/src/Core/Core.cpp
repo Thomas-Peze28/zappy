@@ -113,14 +113,14 @@ int Zappy::Core::run()
         while (network.hasMessage()) {
             std::string message = network.popMessage();
             std::cout << "Received: " << message << std::endl;
-            handleCommands(message, game); 
+            handleCommands(message, game, network); 
         }
         display.render(game);
     }
     return 0;
 }
 
-int Zappy::Core::handleCommands(std::string message, Zappy::Game &game)
+int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     static const std::map<std::string, Zappy::Core::CommandHandler> commands = {
         {"msz", &Zappy::Core::msz},
@@ -128,7 +128,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game)
 
     for (const auto& [cmd, handler] : commands) {
         if (message.starts_with(cmd)) {
-            return (this->*handler)(message, game);
+            return (this->*handler)(message, game, server);
         }
     }
     return 0;
@@ -140,11 +140,13 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game)
 * @param game The game instance.
 * @return 0 on success, or an error code on failure.
 **/
-int Zappy::Core::msz(std::string message, Zappy::Game &game)
+int Zappy::Core::msz(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int width;
     int height;
-    if (sscanf(message.c_str(), "msz %d %d", &width, &height) == 2)
+    if (sscanf(message.c_str(), "msz %d %d", &width, &height) == 2) {
         game.getMap().resize(width, height);
+        server.sendMessage("msz\n");
+    }
     return 0;
 }

@@ -24,7 +24,7 @@ namespace Zappy
     class Core
     {
         public:
-            using CommandHandler = int (Core::*)(std::string, Game&);
+            using CommandHandler = int (Core::*)(std::string, Game&, Network&);
 
             Core(int argc, char *argv[]);
             ~Core() = default;
@@ -38,8 +38,8 @@ namespace Zappy
 
             bool parseArguments(int argc, char *argv[]);
 
-            int handleCommands(std::string message, Game &game);
-            int msz(std::string message, Zappy::Game &game);
+            int handleCommands(std::string message, Game &game, Zappy::Network &server);
+            int msz(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;
