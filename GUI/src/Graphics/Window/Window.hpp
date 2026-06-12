@@ -28,6 +28,9 @@ namespace Zappy
             void endDrawing() const;
             void drawFPS(int x, int y) const;
 
+            bool isWindowFullscreen() const;
+            void toggleFullscreen();
+
         private:
             int _width;
             int _height;

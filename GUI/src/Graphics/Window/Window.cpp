@@ -81,3 +81,20 @@ void Zappy::Window::drawFPS(int x, int y) const
 {
     DrawFPS(x, y);
 }
+
+/**
+* Checks if the window is currently in fullscreen mode.
+* @return True if the window is in fullscreen mode, false otherwise.
+**/
+bool Zappy::Window::isWindowFullscreen() const
+{
+    return IsWindowFullscreen();
+}
+
+/**
+* Toggles the fullscreen mode of the window.
+**/
+void Zappy::Window::toggleFullscreen()
+{
+    ToggleFullscreen();
+}
