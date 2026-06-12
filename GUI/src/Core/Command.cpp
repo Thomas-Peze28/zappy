@@ -12,6 +12,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
     static const std::map<std::string, Zappy::Core::CommandHandler> commands = {
         {"msz", &Zappy::Core::msz},
         {"bct", &Zappy::Core::bct},
+        {"seg", &Zappy::Core::seg},
         // {"tna", &Zappy::Core::tna},
         // {"pnw", &Zappy::Core::pnw},
         // {"ppo", &Zappy::Core::ppo},
@@ -70,5 +71,23 @@ int Zappy::Core::bct(std::string message, Zappy::Game &game, Zappy::Network &ser
         game.getMap().getTile(x, y).setResources(q0, q1, q2, q3, q4, q5, q6);
         server.sendMessage("bct " + std::to_string(x) + " " + std::to_string(y) + "\n");
     }
+    return 0;
+}
+
+/**
+* Handles the "seg" command for the end game.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    std::string teamName;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "seg %s", teamName.data()) == 1)
+        exit(0);
     return 0;
 }
