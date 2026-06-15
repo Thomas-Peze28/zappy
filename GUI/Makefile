@@ -38,10 +38,12 @@ INCLUDE_GRAPHICS =   src/Graphics/Camera/Camera.hpp \
 SRC_GAME	=   src/Game/Game.cpp \
 				src/Game/Tile/Tile.cpp \
 				src/Game/Map/Map.cpp \
+				src/Game/Player/Player.cpp \
 
 INCLUDE_GAME =  src/Game/Game.hpp \
 				src/Game/Tile/Tile.hpp \
 				src/Game/Map/Map.hpp \
+				src/Game/Player/Player.hpp \
 
 SRC_GUI     =   src/main.cpp \
 				src/Core/Core.cpp \

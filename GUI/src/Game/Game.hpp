@@ -14,6 +14,7 @@
 
     #include "RTCError.hpp"
     #include "Map.hpp"
+    #include "Player.hpp"
 
 namespace Zappy
 {
