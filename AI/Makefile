@@ -20,7 +20,7 @@ NAME    =   zappy_ai
 all:    $(NAME)
 
 $(NAME):    $(OBJ)
-	cp src/main.py $(NAME)
+	cp src/zappy_ai.py $(NAME)
 	chmod +x $(NAME)
 	@printf "$(GREEN)[OK]$(RESET) Binary $(CYAN)'$(NAME)'$(RESET) compiled successfully.\n"
 
