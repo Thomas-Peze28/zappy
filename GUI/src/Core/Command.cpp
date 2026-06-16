@@ -15,6 +15,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"seg", &Zappy::Core::seg},
         // {"tna", &Zappy::Core::tna},
         {"pnw", &Zappy::Core::pnw},
+        {"ppo", &Zappy::Core::ppo},
         // ...
     };
 
@@ -111,5 +112,19 @@ int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %s", &p_nbr, &x, &y, &d, &l, teamName.data()) == 6)
         game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamName, l, x, y, d));
+    return 0;
+}
+
+int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    int x;
+    int y;
+    Direction d;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4)
+        game.getPlayer(p_nbr).setPosition(x, y, d);
     return 0;
 }

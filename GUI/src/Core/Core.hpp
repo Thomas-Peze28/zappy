@@ -44,6 +44,7 @@ namespace Zappy
             int seg(std::string message, Zappy::Game &game, Zappy::Network &server);
             // int tna(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pnw(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int ppo(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;
