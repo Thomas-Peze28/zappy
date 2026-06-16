@@ -13,7 +13,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"msz", &Zappy::Core::msz},
         {"bct", &Zappy::Core::bct},
         {"seg", &Zappy::Core::seg},
-        // {"tna", &Zappy::Core::tna},
+        {"tna", &Zappy::Core::tna},
         {"pnw", &Zappy::Core::pnw},
         {"ppo", &Zappy::Core::ppo},
         {"plv", &Zappy::Core::plv},
@@ -88,16 +88,17 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
-// int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &server)
-// {
+int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
 //     std::string teamName;
 
-//     (void)game;
-//     (void)server;
+    (void)game;
+    (void)server;
 //     if (sscanf(message.c_str(), "tna %s", teamName.data()) == 1)
+// TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
 //         exit(0);
-//     return 0;
-// }
+    return 0;
+}
 
 int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &server)
 {

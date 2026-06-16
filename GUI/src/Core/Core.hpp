@@ -42,7 +42,7 @@ namespace Zappy
             int msz(std::string message, Zappy::Game &game, Zappy::Network &server);
             int bct(std::string message, Zappy::Game &game, Zappy::Network &server);
             int seg(std::string message, Zappy::Game &game, Zappy::Network &server);
-            // int tna(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int tna(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pnw(std::string message, Zappy::Game &game, Zappy::Network &server);
             int ppo(std::string message, Zappy::Game &game, Zappy::Network &server);
             int plv(std::string message, Zappy::Game &game, Zappy::Network &server);
