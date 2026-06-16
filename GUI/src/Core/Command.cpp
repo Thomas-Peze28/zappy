@@ -242,12 +242,17 @@ int Zappy::Core::pdr(std::string message, Zappy::Game &game, Zappy::Network &ser
     int p_nbr;
     int i;
     Zappy::RESSOURCE res;
+    int x;
+    int y;
 
     (void)game;
     (void)server;
     if (sscanf(message.c_str(), "pdr #%d %d", &p_nbr, &i) == 2) {
         res = static_cast<Zappy::RESSOURCE>(i);
-        game.getMap().getTile(game.getPlayer(p_nbr).getX(), game.getPlayer(p_nbr).getY()).setResource(res, game.getMap().getTile(game.getPlayer(p_nbr).getX(), game.getPlayer(p_nbr).getY()).getResource(res) + 1);
+        x = game.getPlayer(p_nbr).getX();
+        y = game.getPlayer(p_nbr).getY();
+        game.getMap().getTile(x, y).setResource(res, game.getMap().getTile(x, y).getResource(res) + 1);
+        game.getPlayer(p_nbr).setRessource(res, game.getPlayer(p_nbr).getInventory().at(res) - 1);
     }
     return 0;
 }

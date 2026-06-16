@@ -108,6 +108,20 @@ int Zappy::Player::getResource(RESSOURCE type) const
 }
 
 /**
+* @brief Gets the inventory of the player.
+* @return The inventory of the player.
+**/
+const std::unordered_map<Zappy::RESSOURCE, int>& Zappy::Player::getInventory() const
+{
+    return _inventory;
+}
+
+void Zappy::Player::setRessource(RESSOURCE type, int quantity)
+{
+    _inventory[type] = quantity;
+}
+
+/**
 * @brief Sets the ID of the player.
 * @param id The ID of the player.
 **/
@@ -146,6 +160,7 @@ void Zappy::Player::setPosition(int x, int y, Direction direction)
     _y = y;
     _direction = direction;
 }
+
 
 /**
 * @brief Sets the level of the player.
