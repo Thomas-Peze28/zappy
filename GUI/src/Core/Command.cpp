@@ -22,6 +22,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pic", &Zappy::Core::pic},
         {"pie", &Zappy::Core::pie},
         {"pfk", &Zappy::Core::pfk},
+        {"pdr", &Zappy::Core::pdr},
         // ...
     };
 
@@ -44,6 +45,8 @@ int Zappy::Core::msz(std::string message, Zappy::Game &game, Zappy::Network &ser
 {
     int width;
     int height;
+
+    (void)server;
     if (sscanf(message.c_str(), "msz %d %d", &width, &height) == 2)
         game.getMap().resize(width, height);
     return 0;
@@ -67,6 +70,8 @@ int Zappy::Core::bct(std::string message, Zappy::Game &game, Zappy::Network &ser
     int q4;
     int q5;
     int q6;
+
+    (void)server;
     if (sscanf(message.c_str(), "bct %d %d %d %d %d %d %d %d %d", &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6) == 9)
         game.getMap().getTile(x, y).setResources(q0, q1, q2, q3, q4, q5, q6);
     return 0;
@@ -97,6 +102,7 @@ int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
+    (void)message;
 //     if (sscanf(message.c_str(), "tna %s", teamName.data()) == 1)
 //         TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
     return 0;
@@ -107,14 +113,17 @@ int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &ser
     int p_nbr;
     int x;
     int y;
-    Direction d;
+    int d;
     int l;
     std::string teamName;
+    Direction direction;
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %s", &p_nbr, &x, &y, &d, &l, teamName.data()) == 6)
-        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamName, l, x, y, d));
+    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %s", &p_nbr, &x, &y, &d, &l, teamName.data()) == 6) {
+        direction = static_cast<Direction>(d);
+        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamName, l, x, y, direction));
+    }
     return 0;
 }
 
@@ -123,14 +132,17 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
     int p_nbr;
     int x;
     int y;
-    Direction d;
+    int d;
+    Direction direction;
 
     (void)game;
     (void)server;
     if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4) {
-        if (game.getPlayer(p_nbr).getX() != x || game.getPlayer(p_nbr).getY() != y || game.getPlayer(p_nbr).getDirection() != d)
+        direction = static_cast<Direction>(d);
+        if (game.getPlayer(p_nbr).getX() != x || game.getPlayer(p_nbr).getY() != y || game.getPlayer(p_nbr).getDirection() != direction) {
             // TODO: Joue une animation de déplacement pour le joueur p_nbr
-            game.getPlayer(p_nbr).setPosition(x, y, d);
+            game.getPlayer(p_nbr).setPosition(x, y, direction);
+        }
     }
     return 0;
 }
@@ -167,7 +179,7 @@ int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %s", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6, teamName.data()) == 11)
+    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %d %s", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6, teamName.data()) == 11)
         game.getPlayer(p_nbr).setInventory(q0, q1, q2, q3, q4, q5, q6);
     return 0;
 }
@@ -193,6 +205,7 @@ int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
+    (void)message;
     // if (sscanf(message.c_str(), "pin %d %d %d #%d", &x, &y, &l, &p_nbr))
     // TODO: Joue une animation d'incantation pour le joueur p_nbr
     return 0;
@@ -206,6 +219,7 @@ int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
+    (void)message;
     // if (sscanf(message.c_str(), "pie %d %d %d", &x, &y, &r) == 3)
     // TODO: Arrêter l'animation d'incantation pour le joueur qui est en incantation
     return 0;
@@ -217,7 +231,23 @@ int Zappy::Core::pfk(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
+    (void)message;
     // if (sscanf(message.c_str(), "pfk %d", &p_nbr) == 1)
     // TODO: Joue l'animation de ponte d'œuf pour le joueur p_nbr
+    return 0;
+}
+
+int Zappy::Core::pdr(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    int i;
+    Zappy::RESSOURCE res;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pdr #%d %d", &p_nbr, &i) == 2) {
+        res = static_cast<Zappy::RESSOURCE>(i);
+        game.getMap().getTile(game.getPlayer(p_nbr).getX(), game.getPlayer(p_nbr).getY()).setResource(res, game.getMap().getTile(game.getPlayer(p_nbr).getX(), game.getPlayer(p_nbr).getY()).getResource(res) + 1);
+    }
     return 0;
 }
