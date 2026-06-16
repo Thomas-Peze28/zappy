@@ -217,7 +217,26 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
     for (const auto &[id, player] : game.getPlayers()) {
         float xPos = player.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
         float zPos = player.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
-        _playerModel->draw({xPos, 0.15f, zPos}, 0.5f, WHITE);
+
+        float rotationAngle = 0.0f;
+        switch (player.getDirection()) {
+            case Zappy::Direction::NORTH:
+                rotationAngle = 0.0f;
+                break; 
+            case Zappy::Direction::EAST:
+                rotationAngle = -90.0f;
+                break;
+            case Zappy::Direction::SOUTH:
+                rotationAngle = 180.0f;
+                break;
+            case Zappy::Direction::WEST:
+                rotationAngle = 90.0f;
+                break;
+        }
+
+        Vector3 rotationAxis = { 0.0f, 1.0f, 0.0f };
+
+        _playerModel->draw({xPos, 0.15f, zPos}, rotationAxis, rotationAngle, 0.5f, WHITE);
     }
 }
 
