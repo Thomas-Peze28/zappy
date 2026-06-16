@@ -20,6 +20,7 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
+    _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
 /**
@@ -51,6 +52,7 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
+    _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
 /**
@@ -217,6 +219,29 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
 }
 
 /**
+ * Renders the eggs in the game.
+ * @param game The game instance to render.
+ **/
+void Zappy::Engine::renderEgg(const Zappy::Game &game) const
+{
+    const Zappy::Map &map = game.getMap();
+    int mapWidth = map.getWidth();
+    int mapHeight = map.getHeight();
+
+    if (mapWidth == 0 || mapHeight == 0)
+        return;
+
+    float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
+    float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
+
+    for (const auto &[id, egg] : game.getEggs()) {
+        float xPos = egg.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
+        float zPos = egg.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
+        _eggModel->draw({xPos, 0.3f, zPos}, 1.0f, WHITE);
+    }
+}
+
+/**
  * Renders the 3D game scene.
  * @param game The game instance to render.
  **/
@@ -224,6 +249,7 @@ void Zappy::Engine::render3D(const Zappy::Game &game)
 {
     renderTile(game);
     renderPlayer(game);
+    renderEgg(game);
 }
 
 /**

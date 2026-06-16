@@ -46,6 +46,7 @@ namespace Zappy
             void renderTile(const Zappy::Game &game) const;
             void renderResource(const Zappy::Tile &tile, float x, float y, float z) const;
             void renderPlayer(const Zappy::Game &game) const;
+            void renderEgg(const Zappy::Game &game) const;
 
             void nextCameraMode();
         
@@ -60,6 +61,7 @@ namespace Zappy
             Zappy::Model3D _hexTile;
             std::unordered_map<Zappy::RESSOURCE, std::unique_ptr<Zappy::Model3D>> _resourceModels;
             std::unique_ptr<Zappy::Model3D> _playerModel;
+            std::unique_ptr<Zappy::Model3D> _eggModel;
 
             Zappy::Font _mainFont;
             Zappy::Text _title;
