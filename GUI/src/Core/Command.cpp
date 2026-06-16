@@ -23,6 +23,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pie", &Zappy::Core::pie},
         {"pfk", &Zappy::Core::pfk},
         {"pdr", &Zappy::Core::pdr},
+        {"pgt", &Zappy::Core::pgt},
         // ...
     };
 
@@ -253,6 +254,26 @@ int Zappy::Core::pdr(std::string message, Zappy::Game &game, Zappy::Network &ser
         y = game.getPlayer(p_nbr).getY();
         game.getMap().getTile(x, y).setResource(res, game.getMap().getTile(x, y).getResource(res) + 1);
         game.getPlayer(p_nbr).setRessource(res, game.getPlayer(p_nbr).getInventory().at(res) - 1);
+    }
+    return 0;
+}
+
+int Zappy::Core::pgt(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    int i;
+    Zappy::RESSOURCE res;
+    int x;
+    int y;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pgt #%d %d", &p_nbr, &i) == 2) {
+        res = static_cast<Zappy::RESSOURCE>(i);
+        x = game.getPlayer(p_nbr).getX();
+        y = game.getPlayer(p_nbr).getY();
+        game.getMap().getTile(x, y).setResource(res, game.getMap().getTile(x, y).getResource(res) - 1);
+        game.getPlayer(p_nbr).setRessource(res, game.getPlayer(p_nbr).getInventory().at(res) + 1);
     }
     return 0;
 }
