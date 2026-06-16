@@ -25,6 +25,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pdr", &Zappy::Core::pdr},
         {"pgt", &Zappy::Core::pgt},
         {"pdi", &Zappy::Core::pdi},
+        {"enw", &Zappy::Core::enw},
         // ...
     };
 
@@ -284,5 +285,16 @@ int Zappy::Core::pdi(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "pdi #%d", &p_nbr) == 1)
         game.removePlayer(p_nbr);
+    return 0;
+}
+
+int Zappy::Core::enw(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    int e_nbr;
+
+    (void)server;
+    if (sscanf(message.c_str(), "enw #%d #%d", &p_nbr, &e_nbr) == 2)
+        game.addEgg(Zappy::Egg(e_nbr, "", game.getPlayer(p_nbr).getTeamName(), game.getPlayer(p_nbr).getLevel(), game.getPlayer(p_nbr).getX(), game.getPlayer(p_nbr).getY()));
     return 0;
 }
