@@ -62,3 +62,20 @@ void Zappy::Music::setVolume(float volume)
 {
     SetMusicVolume(_music, volume);
 }
+
+/**
+* Checks if the music is currently playing.
+* @return True if the music is playing, false otherwise.
+**/
+bool Zappy::Music::isPlaying() const
+{
+    return IsMusicStreamPlaying(_music);
+}
+
+/**
+* Pauses the music if it is currently playing.
+**/
+void Zappy::Music::pause() const
+{
+    PauseMusicStream(_music);
+}
