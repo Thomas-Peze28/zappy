@@ -247,16 +247,16 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
         float rotationAngle = 0.0f;
         switch (player.getDirection()) {
             case Zappy::Direction::NORTH:
-                rotationAngle = 0.0f;
+                rotationAngle = 180.0f;
                 break; 
             case Zappy::Direction::EAST:
-                rotationAngle = -90.0f;
+                rotationAngle = 90.0f;
                 break;
             case Zappy::Direction::SOUTH:
-                rotationAngle = 180.0f;
+                rotationAngle = 0.0f;
                 break;
             case Zappy::Direction::WEST:
-                rotationAngle = 90.0f;
+                rotationAngle = -90.0f;
                 break;
         }
 
