@@ -85,6 +85,7 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     (void)server;
     if (sscanf(message.c_str(), "seg %s", teamName.data()) == 1)
+    // TODO: Affiche un message de fin de partie avec le nom de l'équipe gagnante
         exit(0);
     return 0;
 }
@@ -96,8 +97,7 @@ int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     (void)server;
 //     if (sscanf(message.c_str(), "tna %s", teamName.data()) == 1)
-// TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
-//         exit(0);
+//         TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
     return 0;
 }
 
@@ -126,8 +126,11 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4)
-        game.getPlayer(p_nbr).setPosition(x, y, d);
+    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4) {
+        if (game.getPlayer(p_nbr).getX() != x || game.getPlayer(p_nbr).getY() != y || game.getPlayer(p_nbr).getDirection() != d)
+            // TODO: Joue une animation de déplacement pour le joueur p_nbr
+            game.getPlayer(p_nbr).setPosition(x, y, d);
+    }
     return 0;
 }
 
@@ -138,8 +141,12 @@ int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "plv #%d %d", &p_nbr, &l) == 2)
-        game.getPlayer(p_nbr).setLevel(l);
+    if (sscanf(message.c_str(), "plv #%d %d", &p_nbr, &l) == 2) {
+        if (l != game.getPlayer(p_nbr).getLevel()) {
+            // TODO: Joue une animation de level up pour le joueur p_nbr
+            game.getPlayer(p_nbr).setLevel(l);
+        }
+    }
     return 0;
 }
 
