@@ -105,6 +105,7 @@ int Zappy::Core::run()
 
     game.getMap().resize(10, 10);
     game.addPlayer(Zappy::Player(1, "Player1", "TeamA", 1, 2, 3, Zappy::Direction::NORTH));
+    game.addPlayer(Zappy::Player(2, "Player2", "TeamB", 2, 4, 5, Zappy::Direction::SOUTH));
     game.addEgg(Zappy::Egg(1, "Egg1", "TeamA", 1, 4, 5));
     game.getMap().getTile(4, 5).setResources(1, 2, 3, 4, 5, 6, 7);
 
