@@ -26,6 +26,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pgt", &Zappy::Core::pgt},
         {"pdi", &Zappy::Core::pdi},
         {"enw", &Zappy::Core::enw},
+        {"ebo", &Zappy::Core::ebo},
         // ...
     };
 
@@ -292,9 +293,21 @@ int Zappy::Core::enw(std::string message, Zappy::Game &game, Zappy::Network &ser
 {
     int p_nbr;
     int e_nbr;
+    int x;
+    int y;
 
     (void)server;
-    if (sscanf(message.c_str(), "enw #%d #%d", &p_nbr, &e_nbr) == 2)
-        game.addEgg(Zappy::Egg(e_nbr, "", game.getPlayer(p_nbr).getTeamName(), game.getPlayer(p_nbr).getLevel(), game.getPlayer(p_nbr).getX(), game.getPlayer(p_nbr).getY()));
+    if (sscanf(message.c_str(), "enw #%d #%d %d %d", &p_nbr, &e_nbr, &x, &y) == 4)
+        game.addEgg(Zappy::Egg(e_nbr, "", game.getPlayer(p_nbr).getTeamName(), game.getPlayer(p_nbr).getLevel(), x, y));
+    return 0;
+}
+
+int Zappy::Core::ebo(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int e_nbr;
+
+    (void)server;
+    if (sscanf(message.c_str(), "ebo #%d", &e_nbr) == 1)
+        game.removeEgg(e_nbr);
     return 0;
 }

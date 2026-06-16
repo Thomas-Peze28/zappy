@@ -55,6 +55,7 @@ namespace Zappy
             int pgt(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pdi(std::string message, Zappy::Game &game, Zappy::Network &server);
             int enw(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int ebo(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;
