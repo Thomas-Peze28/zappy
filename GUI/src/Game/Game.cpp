@@ -11,7 +11,7 @@
 * @brief Constructs a new Game object.
 **/
 Zappy::Game::Game()
-    : _map(0, 0)
+    : _map(0, 0), time_unit(1)
 {
 }
 
@@ -105,4 +105,22 @@ Zappy::Egg &Zappy::Game::getEgg(int id)
 const std::unordered_map<int, Zappy::Egg> &Zappy::Game::getEggs() const
 {
     return _eggs;
+}
+
+/**
+* @brief Gets the time unit of the game.
+* @return The time unit.
+**/
+int Zappy::Game::getTimeUnit() const
+{
+    return time_unit;
+}
+
+/**
+* @brief Sets the time unit of the game.
+* @param timeUnit The new time unit.
+**/
+void Zappy::Game::setTimeUnit(int timeUnit)
+{
+    time_unit = timeUnit;
 }
