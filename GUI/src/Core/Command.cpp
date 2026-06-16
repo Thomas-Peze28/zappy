@@ -297,7 +297,7 @@ int Zappy::Core::enw(std::string message, Zappy::Game &game, Zappy::Network &ser
     int y;
 
     (void)server;
-    if (sscanf(message.c_str(), "enw #%d #%d %d %d", &p_nbr, &e_nbr, &x, &y) == 4)
+    if (sscanf(message.c_str(), "enw #%d #%d %d %d", &e_nbr, &p_nbr, &x, &y) == 4)
         game.addEgg(Zappy::Egg(e_nbr, "", game.getPlayer(p_nbr).getTeamName(), game.getPlayer(p_nbr).getLevel(), x, y));
     return 0;
 }
