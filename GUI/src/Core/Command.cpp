@@ -179,11 +179,10 @@ int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &ser
     int q4;
     int q5;
     int q6;
-    std::string teamName;
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %d %s", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6, teamName.data()) == 11)
+    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %d", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6) == 10)
         game.getPlayer(p_nbr).setInventory(q0, q1, q2, q3, q4, q5, q6);
     return 0;
 }
