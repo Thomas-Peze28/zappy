@@ -53,6 +53,20 @@ void Zappy::Model3D::draw(const Vector3 &position, float scale, Color tint) cons
 }
 
 /**
+* Draws the 3D model at the specified position, with the given rotation, scale and tint color.
+* @param position The position in 3D space where the model should be drawn.
+* @param rotationAxis The axis around which to rotate the model.
+* @param rotationAngle The angle of rotation in radians.
+* @param scale The scale factor to apply to the model when drawing.
+* @param tint The color tint to apply to the model when drawing.
+* @note This function uses the raylib library's DrawModelEx function to render the model.
+**/
+void Zappy::Model3D::draw(const Vector3 &position, const Vector3 &rotationAxis, float rotationAngle, float scale, Color tint) const
+{
+    DrawModelEx(_model, position, rotationAxis, rotationAngle, {scale, scale, scale}, tint);
+}
+
+/**
 * Returns the width of the 3D model.
 * @return The width of the model as a float.
 **/

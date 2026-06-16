@@ -21,6 +21,7 @@ namespace Zappy
             ~Model3D();
 
             void draw(const Vector3 &position, float scale, Color tint) const;
+            void draw(const Vector3 &position, const Vector3 &rotationAxis, float rotationAngle, float scale, Color tint) const;
 
             float getWidth() const;
             float getDepth() const;
