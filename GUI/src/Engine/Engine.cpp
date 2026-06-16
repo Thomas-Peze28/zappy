@@ -21,6 +21,7 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
     _playerModel->rotateModelX(90.0f);
+    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -54,6 +55,7 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
     _playerModel->rotateModelX(90.0f);
+    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
