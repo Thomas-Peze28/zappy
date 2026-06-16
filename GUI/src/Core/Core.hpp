@@ -50,6 +50,7 @@ namespace Zappy
             int pex(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pic(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pie(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int pfk(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;

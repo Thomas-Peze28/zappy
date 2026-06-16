@@ -21,6 +21,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pex", &Zappy::Core::pex},
         {"pic", &Zappy::Core::pic},
         {"pie", &Zappy::Core::pie},
+        {"pfk", &Zappy::Core::pfk},
         // ...
     };
 
@@ -205,7 +206,18 @@ int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    // if (sscanf(message.c_str(), "pie %d %d %d", &x, &y, &r))
+    // if (sscanf(message.c_str(), "pie %d %d %d", &x, &y, &r) == 3)
     // TODO: Arrêter l'animation d'incantation pour le joueur qui est en incantation
+    return 0;
+}
+
+int Zappy::Core::pfk(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    // int p_nbr;
+
+    (void)game;
+    (void)server;
+    // if (sscanf(message.c_str(), "pfk %d", &p_nbr) == 1)
+    // TODO: Joue l'animation de ponte d'œuf pour le joueur p_nbr
     return 0;
 }
