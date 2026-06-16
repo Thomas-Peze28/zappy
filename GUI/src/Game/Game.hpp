@@ -37,10 +37,15 @@ namespace Zappy
             void removeEgg(int id);
             Egg &getEgg(int id);
             const std::unordered_map<int, Egg> &getEggs() const;
+
+            int getTimeUnit() const;
+            void setTimeUnit(int timeUnit);
         
         private:
             Map _map;
             std::unordered_map<int, Player> _players;
             std::unordered_map<int, Egg> _eggs;
+
+            int time_unit;
     };
 };

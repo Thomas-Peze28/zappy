@@ -20,6 +20,8 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
+    _playerModel->rotateModelX(90.0f);
+    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -52,6 +54,8 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
+    _playerModel->rotateModelX(90.0f);
+    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -79,7 +83,7 @@ void Zappy::Engine::nextCameraMode()
 * Handles user inputs.
 * @return 1 if the user wants to quit, 0 otherwise.
 **/
-int Zappy::Engine::handleInputs()
+int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
 {
     if (Zappy::Input::isKeyPressed(KEY_ESCAPE))
     {
@@ -99,6 +103,26 @@ int Zappy::Engine::handleInputs()
     if (Zappy::Input::isKeyPressed(KEY_C))
     {
         nextCameraMode();
+    }
+
+    if (Zappy::Input::isKeyPressed(KEY_P))
+    {
+        if (_music.isPlaying())
+            _music.pause();
+        else
+            _music.play();
+    }
+
+    if (Zappy::Input::isKeyPressed(KEY_UP))
+    {
+        server.sendMessage("sgt\n");
+        server.sendMessage("sst " + std::to_string(game.getTimeUnit() + 1) + "\n");
+    }
+
+    if (Zappy::Input::isKeyPressed(KEY_DOWN))
+    {
+        server.sendMessage("sgt\n");
+        server.sendMessage("sst " + std::to_string(game.getTimeUnit() - 1) + "\n");
     }
 
     return 0;
@@ -214,6 +238,8 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
     float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
     float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
 
+    _playerModel->updateAnimation();
+
     for (const auto &[id, player] : game.getPlayers()) {
         float xPos = player.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
         float zPos = player.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
@@ -234,9 +260,7 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
                 break;
         }
 
-        Vector3 rotationAxis = { 0.0f, 1.0f, 0.0f };
-
-        _playerModel->draw({xPos, 0.15f, zPos}, rotationAxis, rotationAngle, 0.5f, WHITE);
+        _playerModel->draw({xPos, 0.15f, zPos}, Z_AXIS, rotationAngle, 0.010f, WHITE);
     }
 }
 
@@ -283,6 +307,10 @@ void Zappy::Engine::render2D(const Zappy::Game &)
     _title.draw();
     _sprite.draw({10.0f, 50.0f, 0.0f}, 0.1f, WHITE);
     _window.drawFPS(10, 10);
+
+    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(1), {10.0f, 110.0f}, 20.0f, BLACK);
+    timeUnitText.draw();
+
 }
 
 /**

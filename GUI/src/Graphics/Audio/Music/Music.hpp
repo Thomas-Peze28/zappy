@@ -25,6 +25,8 @@ namespace Zappy
             void stop() const;
             void update() const;
             void setVolume(float volume);
+            bool isPlaying() const;
+            void pause() const;
 
         private:
             ::Music _music;
