@@ -8,8 +8,8 @@
 #include "Engine.hpp"
 
 /**
- * Initializes the Engine with default parameters.
- **/
+* Initializes the Engine with default parameters.
+**/
 Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 {
     _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
@@ -24,11 +24,11 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 }
 
 /**
- * Initializes the Engine with custom parameters.
- * @param width The width of the window.
- * @param height The height of the window.
- * @param title The title of the window.
- **/
+* Initializes the Engine with custom parameters.
+* @param width The width of the window.
+* @param height The height of the window.
+* @param title The title of the window.
+**/
 Zappy::Engine::Engine(int width, int height, const std::string &title)
     : _audioDevice(),
       _window(width, height, title, 60),
@@ -56,14 +56,17 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
 }
 
 /**
- * Checks if the engine window is open.
- * @return True if the window is open, false otherwise.
- **/
+* Checks if the engine window is open.
+* @return True if the window is open, false otherwise.
+**/
 bool Zappy::Engine::isOpen() const
 {
     return _window.isOpen();
 }
 
+/**
+* Switches the camera mode.
+**/
 void Zappy::Engine::nextCameraMode()
 {
     if (_camera.getMode() == CAMERA_FREE)
@@ -73,9 +76,9 @@ void Zappy::Engine::nextCameraMode()
 }
 
 /**
- * Handles user inputs.
- * @return 1 if the user wants to quit, 0 otherwise.
- **/
+* Handles user inputs.
+* @return 1 if the user wants to quit, 0 otherwise.
+**/
 int Zappy::Engine::handleInputs()
 {
     if (Zappy::Input::isKeyPressed(KEY_ESCAPE))
@@ -196,9 +199,9 @@ void Zappy::Engine::renderTile(const Zappy::Game &game) const
 }
 
 /**
- * Renders the players in the game.
- * @param game The game instance to render.
- **/
+* Renders the players in the game.
+* @param game The game instance to render.
+**/
 void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
 {
     const Zappy::Map &map = game.getMap();
@@ -214,14 +217,14 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
     for (const auto &[id, player] : game.getPlayers()) {
         float xPos = player.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
         float zPos = player.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
-        _playerModel->draw({xPos, 0.15f, zPos}, 1.0f, WHITE);
+        _playerModel->draw({xPos, 0.15f, zPos}, 0.5f, WHITE);
     }
 }
 
 /**
- * Renders the eggs in the game.
- * @param game The game instance to render.
- **/
+* Renders the eggs in the game.
+* @param game The game instance to render.
+**/
 void Zappy::Engine::renderEgg(const Zappy::Game &game) const
 {
     const Zappy::Map &map = game.getMap();
@@ -242,9 +245,9 @@ void Zappy::Engine::renderEgg(const Zappy::Game &game) const
 }
 
 /**
- * Renders the 3D game scene.
- * @param game The game instance to render.
- **/
+* Renders the 3D game scene.
+* @param game The game instance to render.
+**/
 void Zappy::Engine::render3D(const Zappy::Game &game)
 {
     renderTile(game);
@@ -253,9 +256,9 @@ void Zappy::Engine::render3D(const Zappy::Game &game)
 }
 
 /**
- * Renders the 2D game scene.
- * @param game The game instance to render.
- **/
+* Renders the 2D game scene.
+* @param game The game instance to render.
+**/
 void Zappy::Engine::render2D(const Zappy::Game &)
 {
     _title.draw();
@@ -264,9 +267,9 @@ void Zappy::Engine::render2D(const Zappy::Game &)
 }
 
 /**
- * Renders the game scene.
- * @param game The game instance to render.
- **/
+* Renders the game scene.
+* @param game The game instance to render.
+**/
 void Zappy::Engine::render(const Zappy::Game &game)
 {
     _music.update();
