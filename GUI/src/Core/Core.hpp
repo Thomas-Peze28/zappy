@@ -48,6 +48,7 @@ namespace Zappy
             int plv(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pin(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pex(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int pic(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;

@@ -19,6 +19,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"plv", &Zappy::Core::plv},
         {"pin", &Zappy::Core::pin},
         {"pex", &Zappy::Core::pex},
+        {"pic", &Zappy::Core::pic},
         // ...
     };
 
@@ -170,5 +171,19 @@ int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &ser
     if (sscanf(message.c_str(), "pex #%d", &p_nbr) == 1)
     // TODO: Joue une animation d'expulsion pour le joueur p_nbr
         server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
+    return 0;
+}
+
+int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    // int x;
+    // int y;
+    // int l;
+    // int p_nbr;
+
+    (void)game;
+    (void)server;
+    // if (sscanf(message.c_str(), "pin %d %d %d #%d", &x, &y, &l, &p_nbr))
+    // TODO: Joue une animation d'incantation pour le joueur p_nbr
     return 0;
 }
