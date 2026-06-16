@@ -24,6 +24,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pfk", &Zappy::Core::pfk},
         {"pdr", &Zappy::Core::pdr},
         {"pgt", &Zappy::Core::pgt},
+        {"pdi", &Zappy::Core::pdi},
         // ...
     };
 
@@ -246,7 +247,6 @@ int Zappy::Core::pdr(std::string message, Zappy::Game &game, Zappy::Network &ser
     int x;
     int y;
 
-    (void)game;
     (void)server;
     if (sscanf(message.c_str(), "pdr #%d %d", &p_nbr, &i) == 2) {
         res = static_cast<Zappy::RESSOURCE>(i);
@@ -266,7 +266,6 @@ int Zappy::Core::pgt(std::string message, Zappy::Game &game, Zappy::Network &ser
     int x;
     int y;
 
-    (void)game;
     (void)server;
     if (sscanf(message.c_str(), "pgt #%d %d", &p_nbr, &i) == 2) {
         res = static_cast<Zappy::RESSOURCE>(i);
@@ -275,5 +274,15 @@ int Zappy::Core::pgt(std::string message, Zappy::Game &game, Zappy::Network &ser
         game.getMap().getTile(x, y).setResource(res, game.getMap().getTile(x, y).getResource(res) - 1);
         game.getPlayer(p_nbr).setRessource(res, game.getPlayer(p_nbr).getInventory().at(res) + 1);
     }
+    return 0;
+}
+
+int Zappy::Core::pdi(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+
+    (void)server;
+    if (sscanf(message.c_str(), "pdi #%d", &p_nbr) == 1)
+        game.removePlayer(p_nbr);
     return 0;
 }
