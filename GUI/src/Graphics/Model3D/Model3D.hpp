@@ -9,6 +9,7 @@
 
     #include <string>
     #include "raylib.h"
+    #include "raymath.h"
 
     #include "RTCError.hpp"
 
@@ -30,10 +31,20 @@ namespace Zappy
             float getWidth() const;
             float getDepth() const;
 
+            void setAnimation(int animIndex);
+            void updateAnimation();
+            void rotateModelX(float angleDegrees);
+
         private:
             Model _model;
+    
             float _width;
             float _depth;
+
+            ModelAnimation *_animations;
+            int _animCount;
+            int _currentAnimIndex;
+            int _animFrameCounter;
     };
 };
 

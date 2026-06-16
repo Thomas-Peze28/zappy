@@ -29,6 +29,11 @@ Zappy::Model3D::Model3D(const std::string &filePath)
     BoundingBox bbox = GetModelBoundingBox(_model);
     _width = bbox.max.x - bbox.min.x;
     _depth = bbox.max.z - bbox.min.z;
+
+    _animCount = 0;
+    _animations = LoadModelAnimations(filePath.c_str(), &_animCount);
+    _currentAnimIndex = 0;
+    _animFrameCounter = 0;
 }
 
 /**
@@ -36,6 +41,9 @@ Zappy::Model3D::Model3D(const std::string &filePath)
 **/
 Zappy::Model3D::~Model3D()
 {
+    if (_animations != nullptr) {
+        UnloadModelAnimations(_animations, _animCount);
+    }
     UnloadModel(_model);
 }
 
@@ -82,4 +90,43 @@ float Zappy::Model3D::getWidth() const
 float Zappy::Model3D::getDepth() const
 {
     return _depth;
+}
+
+/**
+* Sets the current animation of the model to the specified index.
+* @param animIndex The index of the animation to set.
+* @note If the specified index is out of bounds, the current animation will not be changed
+**/
+void Zappy::Model3D::setAnimation(int animIndex)
+{
+    if (animIndex >= 0 && animIndex < _animCount) {
+        _currentAnimIndex = animIndex;
+        _animFrameCounter = 0;
+    }
+}
+
+/**
+* Updates the animation of the model.
+* @note This function should be called every frame to update the animation.
+**/
+void Zappy::Model3D::updateAnimation()
+{
+    if (_animCount > 0 && _animations != nullptr) {
+        _animFrameCounter++;
+
+        if (_animFrameCounter >= _animations[_currentAnimIndex].keyframeCount) {
+            _animFrameCounter = 0;
+        }
+
+        UpdateModelAnimation(_model, _animations[_currentAnimIndex], _animFrameCounter);
+    }
+}
+
+/**
+* Rotates the 3D model around the X-axis by the specified angle.
+* @param angleDegrees The angle of rotation in degrees.
+**/
+void Zappy::Model3D::rotateModelX(float angleDegrees)
+{
+    _model.transform = MatrixMultiply(_model.transform, MatrixRotateX(angleDegrees * DEG2RAD));
 }
