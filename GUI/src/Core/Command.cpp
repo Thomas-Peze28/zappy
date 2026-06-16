@@ -17,6 +17,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pnw", &Zappy::Core::pnw},
         {"ppo", &Zappy::Core::ppo},
         {"plv", &Zappy::Core::plv},
+        {"pin", &Zappy::Core::pin}
         // ...
     };
 
@@ -39,10 +40,8 @@ int Zappy::Core::msz(std::string message, Zappy::Game &game, Zappy::Network &ser
 {
     int width;
     int height;
-    if (sscanf(message.c_str(), "msz %d %d", &width, &height) == 2) {
+    if (sscanf(message.c_str(), "msz %d %d", &width, &height) == 2)
         game.getMap().resize(width, height);
-        server.sendMessage("msz\n");
-    }
     return 0;
 }
 
@@ -64,10 +63,8 @@ int Zappy::Core::bct(std::string message, Zappy::Game &game, Zappy::Network &ser
     int q4;
     int q5;
     int q6;
-    if (sscanf(message.c_str(), "bct %d %d %d %d %d %d %d %d %d", &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6) == 9) {
+    if (sscanf(message.c_str(), "bct %d %d %d %d %d %d %d %d %d", &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6) == 9)
         game.getMap().getTile(x, y).setResources(q0, q1, q2, q3, q4, q5, q6);
-        server.sendMessage("bct " + std::to_string(x) + " " + std::to_string(y) + "\n");
-    }
     return 0;
 }
 
@@ -125,10 +122,8 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4) {
+    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4)
         game.getPlayer(p_nbr).setPosition(x, y, d);
-        server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
-    }
     return 0;
 }
 
@@ -139,9 +134,28 @@ int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "plv #%d %d", &p_nbr, &l) == 2) {
+    if (sscanf(message.c_str(), "plv #%d %d", &p_nbr, &l) == 2)
         game.getPlayer(p_nbr).setLevel(l);
-        server.sendMessage("plv #" + std::to_string(p_nbr) + "\n");
-    }
+    return 0;
+}
+
+int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    int x;
+    int y;
+    int q0;
+    int q1;
+    int q2;
+    int q3;
+    int q4;
+    int q5;
+    int q6;
+    std::string teamName;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %s", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6, teamName.data()) == 11)
+        game.getPlayer(p_nbr).setInventory(q0, q1, q2, q3, q4, q5, q6);
     return 0;
 }

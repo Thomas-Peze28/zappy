@@ -137,4 +137,8 @@ void Zappy::Network::connectToServer()
     _poll.events = POLLIN;
     std::cout << "Connected to " << _host << " on port " << _port << std::endl;
     sendMessage("GRAPHIC\n");
+    sendMessage("msz\n");
+    sendMessage("mct\n");
+    sendMessage("tna\n");
+    sendMessage("sgt\n");
 }
