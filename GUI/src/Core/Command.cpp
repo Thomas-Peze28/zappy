@@ -14,12 +14,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"bct", &Zappy::Core::bct},
         {"seg", &Zappy::Core::seg},
         // {"tna", &Zappy::Core::tna},
-        // {"pnw", &Zappy::Core::pnw},
-        // {"ppo", &Zappy::Core::ppo},
-        // {"plv", &Zappy::Core::plv},
-        // {"pin", &Zappy::Core::pin},
-        // {"sgt", &Zappy::Core::sgt},
-        // {"sgt", &Zappy::Core::sgt},
+        {"pnw", &Zappy::Core::pnw},
         // ...
     };
 
@@ -89,5 +84,32 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "seg %s", teamName.data()) == 1)
         exit(0);
+    return 0;
+}
+
+// int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &server)
+// {
+//     std::string teamName;
+
+//     (void)game;
+//     (void)server;
+//     if (sscanf(message.c_str(), "tna %s", teamName.data()) == 1)
+//         exit(0);
+//     return 0;
+// }
+
+int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    int x;
+    int y;
+    Direction d;
+    int l;
+    std::string teamName;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %s", &p_nbr, &x, &y, &d, &l, teamName.data()) == 6)
+        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamName, l, x, y, d));
     return 0;
 }
