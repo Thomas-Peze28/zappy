@@ -234,9 +234,7 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
                 break;
         }
 
-        Vector3 rotationAxis = { 0.0f, 1.0f, 0.0f };
-
-        _playerModel->draw({xPos, 0.15f, zPos}, rotationAxis, rotationAngle, 0.5f, WHITE);
+        _playerModel->draw({xPos, 0.15f, zPos}, Z_AXIS, rotationAngle, 0.5f, WHITE);
     }
 }
 

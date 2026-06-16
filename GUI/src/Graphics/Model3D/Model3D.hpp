@@ -12,6 +12,10 @@
 
     #include "RTCError.hpp"
 
+    #define X_AXIS {1.0f, 0.0f, 0.0f}
+    #define Y_AXIS {0.0f, 0.0f, 1.0f}
+    #define Z_AXIS {0.0f, 1.0f, 0.0f}
+
 namespace Zappy
 {
     class Model3D
