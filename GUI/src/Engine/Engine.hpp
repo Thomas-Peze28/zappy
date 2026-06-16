@@ -18,6 +18,7 @@
 
     #include "RTCError.hpp"
 
+    #include "Network.hpp"
     #include "Window.hpp"
     #include "Camera.hpp"
     #include "Model3D.hpp"
@@ -41,7 +42,7 @@ namespace Zappy
             ~Engine() = default;
 
             bool isOpen() const;
-            int handleInputs();
+            int handleInputs(Zappy::Game &game, Zappy::Network &server);
             void render(const Zappy::Game &game);
             void renderTile(const Zappy::Game &game) const;
             void renderResource(const Zappy::Tile &tile, float x, float y, float z) const;

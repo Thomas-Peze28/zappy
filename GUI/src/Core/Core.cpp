@@ -111,7 +111,7 @@ int Zappy::Core::run()
 
     while (display.isOpen() && !_signal) {
 
-        if (display.handleInputs() == 1)
+        if (display.handleInputs(game, network) == 1)
             _signal = true;
         network.update();
         while (network.hasMessage()) {
