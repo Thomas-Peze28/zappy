@@ -17,7 +17,8 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pnw", &Zappy::Core::pnw},
         {"ppo", &Zappy::Core::ppo},
         {"plv", &Zappy::Core::plv},
-        {"pin", &Zappy::Core::pin}
+        {"pin", &Zappy::Core::pin},
+        {"pex", &Zappy::Core::pex},
         // ...
     };
 
@@ -157,5 +158,17 @@ int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %s", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6, teamName.data()) == 11)
         game.getPlayer(p_nbr).setInventory(q0, q1, q2, q3, q4, q5, q6);
+    return 0;
+}
+
+int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pex #%d", &p_nbr) == 1)
+    // TODO: Joue une animation d'expulsion pour le joueur p_nbr
+        server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
     return 0;
 }
