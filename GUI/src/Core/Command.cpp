@@ -124,7 +124,9 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4)
+    if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4) {
         game.getPlayer(p_nbr).setPosition(x, y, d);
+        server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
+    }
     return 0;
 }
