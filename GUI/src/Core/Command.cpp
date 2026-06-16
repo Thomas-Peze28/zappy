@@ -297,8 +297,18 @@ int Zappy::Core::enw(std::string message, Zappy::Game &game, Zappy::Network &ser
     int y;
 
     (void)server;
-    if (sscanf(message.c_str(), "enw #%d #%d %d %d", &e_nbr, &p_nbr, &x, &y) == 4)
-        game.addEgg(Zappy::Egg(e_nbr, "", game.getPlayer(p_nbr).getTeamName(), game.getPlayer(p_nbr).getLevel(), x, y));
+    if (sscanf(message.c_str(), "enw #%d #%d %d %d", &e_nbr, &p_nbr, &x, &y) == 4) {
+        std::string teamName = "";
+        int level = 1;
+
+        const auto &players = game.getPlayers();
+        if (p_nbr >= 0 && players.find(p_nbr) != players.end()) {
+            teamName = game.getPlayer(p_nbr).getTeamName();
+            level = game.getPlayer(p_nbr).getLevel();
+        }
+
+    game.addEgg(Zappy::Egg(e_nbr, "", teamName, level, x, y));
+    }
     return 0;
 }
 
