@@ -55,7 +55,7 @@ void Zappy::Game::removePlayer(int id)
 * @brief Gets a player from the game.
 * @param id The ID of the player to get.
 * @return A reference to the requested player.
-*/
+**/
 Zappy::Player &Zappy::Game::getPlayer(int id)
 {
     return _players.at(id);
@@ -64,8 +64,45 @@ Zappy::Player &Zappy::Game::getPlayer(int id)
 /**
 * @brief Gets all players in the game.
 * @return A reference to the map of players.
-*/
+**/
 const std::unordered_map<int, Zappy::Player> &Zappy::Game::getPlayers() const
 {
     return _players;
+}
+
+/**
+* @brief Adds an egg to the game.
+* @param egg The egg to add.
+**/
+void Zappy::Game::addEgg(const Egg& egg)
+{
+    _eggs[egg.getId()] = egg;
+}
+
+/**
+* @brief Removes an egg from the game.
+* @param id The ID of the egg to remove.
+**/
+void Zappy::Game::removeEgg(int id)
+{
+    _eggs.erase(id);
+}
+
+/**
+* @brief Gets an egg from the game.
+* @param id The ID of the egg to get.
+* @return A reference to the requested egg.
+*/
+Zappy::Egg &Zappy::Game::getEgg(int id)
+{
+    return _eggs.at(id);
+}
+
+/**
+* @brief Gets all eggs in the game.
+* @return A reference to the map of eggs.
+**/
+const std::unordered_map<int, Zappy::Egg> &Zappy::Game::getEggs() const
+{
+    return _eggs;
 }
