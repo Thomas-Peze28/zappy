@@ -20,6 +20,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pin", &Zappy::Core::pin},
         {"pex", &Zappy::Core::pex},
         {"pic", &Zappy::Core::pic},
+        {"pie", &Zappy::Core::pie},
         // ...
     };
 
@@ -186,5 +187,18 @@ int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     // if (sscanf(message.c_str(), "pin %d %d %d #%d", &x, &y, &l, &p_nbr))
     // TODO: Joue une animation d'incantation pour le joueur p_nbr
+    return 0;
+}
+
+int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    // int x;
+    // int y;
+    // int r;
+
+    (void)game;
+    (void)server;
+    // if (sscanf(message.c_str(), "pie %d %d %d", &x, &y, &r))
+    // TODO: Arrêter l'animation d'incantation pour le joueur qui est en incantation
     return 0;
 }
