@@ -28,6 +28,8 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"enw", &Zappy::Core::enw},
         {"ebo", &Zappy::Core::ebo},
         {"edi", &Zappy::Core::edi},
+        {"sgt", &Zappy::Core::sgt},
+        {"sst", &Zappy::Core::sst},
         // ...
     };
 
@@ -329,5 +331,25 @@ int Zappy::Core::edi(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "edi #%d", &e_nbr) == 1)
         game.removeEgg(e_nbr);
+    return 0;
+}
+
+int Zappy::Core::sgt(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int t;
+
+    (void)server;
+    if (sscanf(message.c_str(), "sgt #%d", &t) == 1)
+        game.setTimeUnit(t);
+    return 0;
+}
+
+int Zappy::Core::sst(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int t;
+
+    (void)server;
+    if (sscanf(message.c_str(), "sst #%d", &t) == 1)
+        game.setTimeUnit(t);
     return 0;
 }
