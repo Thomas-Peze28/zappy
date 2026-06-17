@@ -27,6 +27,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"pdi", &Zappy::Core::pdi},
         {"enw", &Zappy::Core::enw},
         {"ebo", &Zappy::Core::ebo},
+        {"edi", &Zappy::Core::edi},
         // ...
     };
 
@@ -317,6 +318,16 @@ int Zappy::Core::ebo(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)server;
     if (sscanf(message.c_str(), "ebo #%d", &e_nbr) == 1)
+        game.removeEgg(e_nbr);
+    return 0;
+}
+
+int Zappy::Core::edi(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int e_nbr;
+
+    (void)server;
+    if (sscanf(message.c_str(), "edi #%d", &e_nbr) == 1)
         game.removeEgg(e_nbr);
     return 0;
 }
