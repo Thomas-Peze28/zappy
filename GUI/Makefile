@@ -11,6 +11,7 @@ YELLOW=\033[0;33m
 BLUE=\033[0;34m
 MAGENTA=\033[0;35m
 CYAN=\033[0;36m
+BOLD=\033[1m
 RESET=\033[0m
 
 SRC_GRAPHICS =  src/Graphics/Camera/Camera.cpp \
@@ -91,4 +92,22 @@ fclean: clean
 re:     fclean all
 		@printf "$(BLUE)[INFO]$(RESET) GUI rebuilt successfully.\n"
 
-.PHONY: all clean fclean re tests_run clean_tests
+test_gui:
+	${MAKE} --no-print-directory -C ./
+	@set -e; \
+	trap 'kill $$ai_pid $$server_pid 2>/dev/null || true' EXIT; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
+	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
+	./test/zappy_test_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 5 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
+	sleep 1; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
+	$(MAKE) --no-print-directory -C ../AI; \
+	../AI/zappy_ai -p 5252 -n Team1 >test/zappy_ai.log 2>&1 & ai_pid=$$!; \
+	sleep 1; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI binary...\n"; \
+	./zappy_gui -h localhost -p 5252
+	${MAKE} --no-print-directory -C ../AI fclean
+	${MAKE} --no-print-directory -C ./ fclean
+	rm -f test/zappy_test_server.log test/zappy_ai.log
+
+.PHONY: all clean fclean re test_gui clean_tests
