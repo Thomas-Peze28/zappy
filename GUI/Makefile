@@ -108,6 +108,10 @@ test_gui:
 	./zappy_gui -h localhost -p 5252
 	${MAKE} --no-print-directory -C ../AI fclean
 	${MAKE} --no-print-directory -C ./ fclean
+
+clean_tests:
+	${MAKE} --no-print-directory -C ../AI fclean
+	${MAKE} --no-print-directory -C ./ fclean
 	rm -f test/zappy_test_server.log test/zappy_ai.log
 
 .PHONY: all clean fclean re test_gui clean_tests
