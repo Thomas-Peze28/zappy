@@ -103,6 +103,13 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "tna" command for getting the list of teams.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
 //     std::string teamName;
@@ -115,6 +122,13 @@ int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pnw" command for player connection.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -134,6 +148,13 @@ int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "ppo" command for player position update.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -154,6 +175,13 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "plv" command for player level update.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -170,6 +198,13 @@ int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pin" command for player inventory update.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -190,6 +225,13 @@ int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pex" command for player expulsion.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -202,6 +244,14 @@ int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pic" command for player incantation (start of an incantation by the ﬁrst
+player).
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     // int x;
@@ -217,6 +267,13 @@ int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pie" command for player incantation (end of an incantation).
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     // int x;
@@ -231,6 +288,13 @@ int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pfk" command for egg laying by the player.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pfk(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     // int p_nbr;
@@ -243,6 +307,13 @@ int Zappy::Core::pfk(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pdr" command for player dropping a resource.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pdr(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -262,6 +333,13 @@ int Zappy::Core::pdr(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pgt" command for player getting a resource.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pgt(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -281,6 +359,13 @@ int Zappy::Core::pgt(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "pdi" command for player death.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::pdi(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -291,6 +376,13 @@ int Zappy::Core::pdi(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "enw" command for egg laid by a player.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::enw(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int p_nbr;
@@ -314,6 +406,13 @@ int Zappy::Core::enw(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "ebo" command for egg hatching.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::ebo(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int e_nbr;
@@ -324,6 +423,13 @@ int Zappy::Core::ebo(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "edi" command for egg destruction.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::edi(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int e_nbr;
@@ -334,6 +440,13 @@ int Zappy::Core::edi(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "sgt" command for getting the game time unit.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::sgt(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int t;
@@ -344,6 +457,13 @@ int Zappy::Core::sgt(std::string message, Zappy::Game &game, Zappy::Network &ser
     return 0;
 }
 
+/**
+* Handles the "sst" command for setting the game time unit.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
 int Zappy::Core::sst(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
     int t;
