@@ -115,14 +115,20 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
 
     if (Zappy::Input::isKeyPressed(KEY_UP))
     {
-        server.sendMessage("sgt\n");
-        server.sendMessage("sst " + std::to_string(game.getTimeUnit() + 1) + "\n");
+        int newTime = game.getTimeUnit() + 10;
+        
+        server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
 
     if (Zappy::Input::isKeyPressed(KEY_DOWN))
     {
-        server.sendMessage("sgt\n");
-        server.sendMessage("sst " + std::to_string(game.getTimeUnit() - 1) + "\n");
+        int newTime = game.getTimeUnit() - 10;
+        
+        if (newTime <= 0) {
+            newTime = 2;
+        }
+        
+        server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
 
     return 0;
@@ -302,15 +308,14 @@ void Zappy::Engine::render3D(const Zappy::Game &game)
 * Renders the 2D game scene.
 * @param game The game instance to render.
 **/
-void Zappy::Engine::render2D(const Zappy::Game &)
+void Zappy::Engine::render2D(const Zappy::Game &game)
 {
     _title.draw();
     _sprite.draw({10.0f, 50.0f, 0.0f}, 0.1f, WHITE);
     _window.drawFPS(10, 10);
 
-    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(1), {10.0f, 110.0f}, 20.0f, BLACK);
+    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {10.0f, 110.0f}, 20.0f, BLACK);
     timeUnitText.draw();
-
 }
 
 /**

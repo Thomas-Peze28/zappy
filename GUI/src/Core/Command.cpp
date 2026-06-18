@@ -452,7 +452,7 @@ int Zappy::Core::sgt(std::string message, Zappy::Game &game, Zappy::Network &ser
     int t;
 
     (void)server;
-    if (sscanf(message.c_str(), "sgt #%d", &t) == 1)
+    if (sscanf(message.c_str(), "sgt %d", &t) == 1)
         game.setTimeUnit(t);
     return 0;
 }
@@ -469,7 +469,7 @@ int Zappy::Core::sst(std::string message, Zappy::Game &game, Zappy::Network &ser
     int t;
 
     (void)server;
-    if (sscanf(message.c_str(), "sst #%d", &t) == 1)
+    if (sscanf(message.c_str(), "sst %d", &t) == 1)
         game.setTimeUnit(t);
     return 0;
 }

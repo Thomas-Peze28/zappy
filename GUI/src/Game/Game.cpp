@@ -11,7 +11,7 @@
 * @brief Constructs a new Game object.
 **/
 Zappy::Game::Game()
-    : _map(0, 0), time_unit(1)
+    : _map(0, 0), time_unit(0)
 {
 }
 
