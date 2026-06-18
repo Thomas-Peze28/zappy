@@ -2,6 +2,7 @@ import math
 import time
 from collections import deque
 
+from .zappy_broadcast import ZappyBroadcastCoordinator
 from .zappy_state import DroneState
 
 
@@ -38,6 +39,7 @@ class ZappyAI:
         self.food_threshold = 15
         self.last_fork_time = 0.0
         self.last_connect_nbr_time = time.time()
+        self.broadcast = ZappyBroadcastCoordinator(team_name, self.sock.fileno())
 
     def queue_command(self, command):
         self.command_queue.append(command)
@@ -165,14 +167,22 @@ class ZappyAI:
             print(f"[IA - FD {fd}] Impossible de deposer '{resource}' (ko).")
 
     def _handle_broadcast(self, k, text):
-        expected_msg = f"{self.team_name}_ELEVATE_{self.level + 1}"
-        if text == expected_msg and self.inventory.get("food", 0) > 10:
-            self.command_queue.clear()
-            self.state = DroneState.JOIN_ELEVATION
-            if k == 0:
-                print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Arrive sur la case du leader.")
-            else:
-                self._move_to_sound(k)
+        frame = self.broadcast.parse_incoming(text)
+        if not frame:
+            return
+
+        if frame.level != self.level + 1 or self.inventory.get("food", 0) <= 10:
+            return
+
+        if not self.broadcast.should_follow(frame):
+            return
+
+        self.command_queue.clear()
+        self.state = DroneState.JOIN_ELEVATION
+        if k == 0:
+            print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Arrive sur la case du leader.")
+        else:
+            self._move_to_sound(k)
 
     def _move_to_sound(self, k):
         if k == 1:
@@ -323,7 +333,15 @@ class ZappyAI:
                 return
             players_on_tile = (self.vision[0].count("player") if self.vision else 0) + 1
             if players_on_tile < req[0]:
-                self.queue_command(f"Broadcast {self.team_name}_ELEVATE_{self.level + 1}")
+                if self.broadcast.can_announce():
+                    payload = {
+                        "players": players_on_tile,
+                        "food": self.inventory.get("food", 0),
+                        "missing": self._missing_stones(),
+                    }
+                    self.queue_command(
+                        f"Broadcast {self.broadcast.build_elevation_broadcast(self.level + 1, payload)}"
+                    )
             else:
                 for i, stone in enumerate(self.STONES):
                     for _ in range(req[i + 1]):
