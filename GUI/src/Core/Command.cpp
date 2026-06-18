@@ -31,6 +31,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"sgt", &Zappy::Core::sgt},
         {"sst", &Zappy::Core::sst},
         {"smg", &Zappy::Core::smg},
+        {"sbp", &Zappy::Core::sbp},
         // ...
     };
 
@@ -487,7 +488,24 @@ int Zappy::Core::smg(std::string message, Zappy::Game &game, Zappy::Network &ser
     int m;
 
     (void)server;
+    (void)game;
     if (sscanf(message.c_str(), "smg #%d", &m) == 1)
         printf("Message from server: %d\n", m);
+    return 0;
+}
+
+/**
+* Handles the "sbp" command for bad parameters.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::sbp(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    (void)server;
+    (void)game;
+    if (sscanf(message.c_str(), "sbp") == 0)
+        printf("Bad parameters sent to server on last command\n");
     return 0;
 }
