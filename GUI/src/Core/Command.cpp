@@ -32,7 +32,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"sst", &Zappy::Core::sst},
         {"smg", &Zappy::Core::smg},
         {"sbp", &Zappy::Core::sbp},
-        // ...
+        {"suc", &Zappy::Core::suc}
     };
 
     for (const auto& [cmd, handler] : commands) {
@@ -491,6 +491,22 @@ int Zappy::Core::smg(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     if (sscanf(message.c_str(), "smg #%d", &m) == 1)
         printf("Message from server: %d\n", m);
+    return 0;
+}
+
+/**
+* Handles the "suc" command for unknown command.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::suc(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    (void)server;
+    (void)game;
+    if (sscanf(message.c_str(), "suc") == 0)
+        printf("Unknown command sent to server\n");
     return 0;
 }
 

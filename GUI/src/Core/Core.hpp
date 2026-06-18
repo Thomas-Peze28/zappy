@@ -60,6 +60,7 @@ namespace Zappy
             int sgt(std::string message, Zappy::Game &game, Zappy::Network &server);
             int sst(std::string message, Zappy::Game &game, Zappy::Network &server);
             int smg(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int suc(std::string message, Zappy::Game &game, Zappy::Network &server);
             int sbp(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
