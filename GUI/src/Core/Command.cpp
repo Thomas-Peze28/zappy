@@ -19,6 +19,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"plv", &Zappy::Core::plv},
         {"pin", &Zappy::Core::pin},
         {"pex", &Zappy::Core::pex},
+        {"pbc", &Zappy::Core::pbc},
         {"pic", &Zappy::Core::pic},
         {"pie", &Zappy::Core::pie},
         {"pfk", &Zappy::Core::pfk},
@@ -243,6 +244,26 @@ int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &ser
     if (sscanf(message.c_str(), "pex #%d", &p_nbr) == 1)
     // TODO: Joue une animation d'expulsion pour le joueur p_nbr
         server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
+    return 0;
+}
+
+/**
+* Handles the "pbc" command for player broadcast.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::pbc(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    std::string msg;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.c_str()) == 2)
+    // TODO: Mettre le message dans l'HUD
+        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.c_str());
     return 0;
 }
 
