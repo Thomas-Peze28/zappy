@@ -30,6 +30,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"edi", &Zappy::Core::edi},
         {"sgt", &Zappy::Core::sgt},
         {"sst", &Zappy::Core::sst},
+        {"smg", &Zappy::Core::smg},
         // ...
     };
 
@@ -471,5 +472,22 @@ int Zappy::Core::sst(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "sst #%d", &t) == 1)
         game.setTimeUnit(t);
+    return 0;
+}
+
+/**
+* Handles the "smg" command for the messages of the server.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::smg(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int m;
+
+    (void)server;
+    if (sscanf(message.c_str(), "smg #%d", &m) == 1)
+        printf("Message from server: %d\n", m);
     return 0;
 }

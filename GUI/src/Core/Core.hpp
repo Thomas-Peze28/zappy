@@ -59,6 +59,7 @@ namespace Zappy
             int edi(std::string message, Zappy::Game &game, Zappy::Network &server);
             int sgt(std::string message, Zappy::Game &game, Zappy::Network &server);
             int sst(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int smg(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;
