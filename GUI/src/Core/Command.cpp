@@ -468,8 +468,10 @@ int Zappy::Core::edi(std::string message, Zappy::Game &game, Zappy::Network &ser
     int e_nbr;
 
     (void)server;
-    if (sscanf(message.c_str(), "edi #%d", &e_nbr) == 1)
+    if (sscanf(message.c_str(), "edi #%d", &e_nbr) == 1) {
         game.removeEgg(e_nbr);
+        game.addNotification("Egg #" + std::to_string(e_nbr) + " destroyed.");
+    }
     return 0;
 }
 
