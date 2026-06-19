@@ -55,6 +55,9 @@ namespace Zappy
             void setRessource(RESSOURCE type, int quantity);
             void setPositionVisual(float xVisual, float yVisual);
 
+            void startBroadcast();
+            bool isBroadcasting() const;
+
         private:
             int _id;
             std::string _name;
@@ -66,6 +69,7 @@ namespace Zappy
             float _yVisual;
             Direction _direction;
             std::unordered_map<RESSOURCE, int> _inventory;
+            float _broadcastTimer;
     };
 };
 

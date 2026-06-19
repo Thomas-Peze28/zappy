@@ -102,12 +102,20 @@ float Zappy::Player::getYVisual() const
     return _yVisual;
 }
 
+/**
+* @brief Updates the visual state of the player.
+* @param deltaTime The time elapsed since the last update.
+**/
 void Zappy::Player::updateVisual(float deltaTime)
 {
     float speed = 5.0f;
 
     _xVisual += (_x - _xVisual) * speed * deltaTime;
     _yVisual += (_y - _yVisual) * speed * deltaTime;
+
+    if (_broadcastTimer > 0.0f) {
+        _broadcastTimer -= deltaTime;
+    }
 }
 
 /**
@@ -142,6 +150,11 @@ const std::unordered_map<Zappy::RESSOURCE, int>& Zappy::Player::getInventory() c
     return _inventory;
 }
 
+/**
+* @brief Sets the amount of a specific resource the player has.
+* @param type The type of resource to set.
+* @param quantity The amount of the specified resource.
+**/
 void Zappy::Player::setRessource(RESSOURCE type, int quantity)
 {
     _inventory[type] = quantity;
@@ -226,4 +239,21 @@ void Zappy::Player::setInventory(int food, int linemate, int deraumere, int sibu
     _inventory[RESSOURCE::MENDIANE] = mendiane;
     _inventory[RESSOURCE::PHIRAS] = phiras;
     _inventory[RESSOURCE::THYSTAME] = thystame;
+}
+
+/**
+* @brief Starts the broadcast animation for the player.
+**/
+void Zappy::Player::startBroadcast()
+{
+    _broadcastTimer = 2.0f;
+}
+
+/**
+* @brief Checks if the player is currently broadcasting.
+* @return True if the player is broadcasting, false otherwise.
+**/
+bool Zappy::Player::isBroadcasting() const
+{
+    return _broadcastTimer > 0.0f;
 }

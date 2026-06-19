@@ -24,6 +24,7 @@ SRC_GRAPHICS =  src/Graphics/Camera/Camera.cpp \
 				src/Graphics/Audio/AudioDevice/AudioDevice.cpp \
 				src/Graphics/Audio/Sound/Sound.cpp \
 				src/Graphics/Audio/Music/Music.cpp \
+				src/Graphics/Shape3D/Shape3D.cpp \
 
 INCLUDE_GRAPHICS =   src/Graphics/Camera/Camera.hpp \
 					 src/Graphics/Window/Window.hpp \
@@ -35,6 +36,7 @@ INCLUDE_GRAPHICS =   src/Graphics/Camera/Camera.hpp \
 					 src/Graphics/Audio/AudioDevice/AudioDevice.hpp \
 					 src/Graphics/Audio/Sound/Sound.hpp \
 					 src/Graphics/Audio/Music/Music.hpp \
+					 src/Graphics/Shape3D/Shape3D.hpp \
 
 SRC_GAME	=   src/Game/Game.cpp \
 				src/Game/Tile/Tile.cpp \
