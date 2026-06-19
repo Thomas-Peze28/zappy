@@ -326,13 +326,13 @@ int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &ser
 **/
 int Zappy::Core::pfk(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-    // int p_nbr;
+    int p_nbr;
 
     (void)game;
     (void)server;
     (void)message;
-    // if (sscanf(message.c_str(), "pfk %d", &p_nbr) == 1)
-    // TODO: Joue l'animation de ponte d'œuf pour le joueur p_nbr
+    if (sscanf(message.c_str(), "pfk %d", &p_nbr) == 1)
+        game.addNotification("Player #" + std::to_string(p_nbr) + " laid an egg.");
     return 0;
 }
 
