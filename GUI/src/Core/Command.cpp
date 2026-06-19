@@ -123,7 +123,7 @@ int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &ser
     if (sscanf(message.c_str(), "tna %127s", teamName) == 1) {
         std::string teamNameStr(teamName);
         game.addNotification("New team: " + teamNameStr);
-//         TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
+//         TODO: Ajoute teamName à la liste des équipes et y assigner une couleur
     }
     return 0;
 }
@@ -200,6 +200,7 @@ int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &ser
         if (l != game.getPlayer(p_nbr).getLevel()) {
             // TODO: Joue une animation de level up pour le joueur p_nbr
             game.getPlayer(p_nbr).setLevel(l);
+            game.addNotification("Player #" + std::to_string(p_nbr) + " leveled up to level " + std::to_string(l));
         }
     }
     return 0;
