@@ -449,8 +449,10 @@ int Zappy::Core::ebo(std::string message, Zappy::Game &game, Zappy::Network &ser
     int e_nbr;
 
     (void)server;
-    if (sscanf(message.c_str(), "ebo #%d", &e_nbr) == 1)
+    if (sscanf(message.c_str(), "ebo #%d", &e_nbr) == 1) {
         game.removeEgg(e_nbr);
+        game.addNotification("Egg #" + std::to_string(e_nbr) + " is hatching, a new player will be born.");
+    }
     return 0;
 }
 
