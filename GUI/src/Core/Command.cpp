@@ -261,9 +261,9 @@ int Zappy::Core::pbc(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.c_str()) == 2)
+    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.data()) == 2)
     // TODO: Mettre le message dans l'HUD
-        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.c_str());
+        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.data());
     return 0;
 }
 

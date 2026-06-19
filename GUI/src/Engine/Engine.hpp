@@ -26,6 +26,7 @@
     #include "Text.hpp"
     #include "Input.hpp"
     #include "Sprite.hpp"
+    #include "Hud.hpp"
     #include "AudioDevice.hpp"
     #include "Sound.hpp"
     #include "Music.hpp"
@@ -69,6 +70,8 @@ namespace Zappy
             Zappy::Sprite _sprite;
             Zappy::Music _music;
             Zappy::Sound _sound;
+
+            Zappy::Hud _hud;
 
             float _gap;
     };

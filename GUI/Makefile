@@ -41,12 +41,14 @@ SRC_GAME	=   src/Game/Game.cpp \
 				src/Game/Map/Map.cpp \
 				src/Game/Player/Player.cpp \
 				src/Game/Egg/Egg.cpp \
+				src/Game/HUD/Hud.cpp \
 
 INCLUDE_GAME =  src/Game/Game.hpp \
 				src/Game/Tile/Tile.hpp \
 				src/Game/Map/Map.hpp \
 				src/Game/Player/Player.hpp \
 				src/Game/Egg/Egg.hpp \
+				src/Game/HUD/Hud.hpp \
 
 SRC_GUI     =   src/main.cpp \
 				src/Core/Core.cpp \
