@@ -242,8 +242,8 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
 
 
     for (const auto &[id, player] : game.getPlayers()) {
-        float xPos = player.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
-        float zPos = player.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
+        float xPos = player.getXVisual() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
+        float zPos = player.getYVisual() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
 
         float rotationAngle = 0.0f;
         switch (player.getDirection()) {
@@ -261,7 +261,19 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
                 break;
         }
 
-        int animIndex = 1;
+        float dx = player.getX() - player.getXVisual();
+        float dy = player.getY() - player.getYVisual();
+        float distance = std::sqrt(dx * dx + dy * dy);
+
+        bool isMoving = distance > 0.01f;
+
+        float jumpHeight = 0.0f;
+        if (isMoving)
+            jumpHeight = std::sin(std::fmin(distance, 1.0f) * PI) * 0.5f;
+    
+        int animIndex = PLAYER_IDLE_ANIM;
+        if (isMoving)
+            animIndex = PLAYER_JUMP_ANIM;
 
         _playerAnimFrames[id]++;
         
@@ -272,7 +284,7 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
 
         _playerModel->applyAnimation(animIndex, _playerAnimFrames[id]);
 
-        _playerModel->drawStanding({xPos, 0.15f, zPos}, rotationAngle, 0.010f, WHITE);
+        _playerModel->drawStanding({xPos, 0.15f + jumpHeight, zPos}, rotationAngle, 0.010f, WHITE);
 
     }
 }

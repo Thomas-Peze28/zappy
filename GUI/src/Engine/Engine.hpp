@@ -32,6 +32,10 @@
     #include "Game.hpp"
     #include "Tile.hpp"
 
+    #define PLAYER_JUMP_ANIM 0
+    #define PLAYER_IDLE_ANIM 1
+    #define PLAYER_WALK_ANIM 2
+
 namespace Zappy
 {
     class Engine
