@@ -115,13 +115,16 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
 **/
 int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-//     std::string teamName;
+    char teamName[128] = {0};
 
     (void)game;
     (void)server;
     (void)message;
-//     if (sscanf(message.c_str(), "tna %s", teamName.data()) == 1)
-//         TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
+    if (sscanf(message.c_str(), "tna %127s", teamName) == 1) {
+        std::string teamNameStr(teamName);
+        game.addNotification("New team: " + teamNameStr);
+//         TODO: Ajoute teamName à la liste des équipes et y assigner une couleur
+    }
     return 0;
 }
 
@@ -139,14 +142,15 @@ int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &ser
     int y;
     int d;
     int l;
-    std::string teamName;
+    char teamName[128] = {0};
     Direction direction;
 
-    (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %s", &p_nbr, &x, &y, &d, &l, teamName.data()) == 6) {
+    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %127s", &p_nbr, &x, &y, &d, &l, teamName) == 6) {
         direction = static_cast<Direction>(d);
-        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamName, l, x, y, direction));
+        std::string teamNameStr(teamName);
+        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamNameStr, l, x, y, direction));
+        game.addNotification("Player #" + std::to_string(p_nbr) + " connected to " + teamNameStr);
     }
     return 0;
 }
@@ -196,6 +200,7 @@ int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &ser
         if (l != game.getPlayer(p_nbr).getLevel()) {
             // TODO: Joue une animation de level up pour le joueur p_nbr
             game.getPlayer(p_nbr).setLevel(l);
+            game.addNotification("Player #" + std::to_string(p_nbr) + " leveled up to level " + std::to_string(l));
         }
     }
     return 0;
@@ -261,9 +266,9 @@ int Zappy::Core::pbc(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.c_str()) == 2) {
-        // TODO: Mettre le message dans l'HUD
-        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.c_str());
+    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.data()) == 2) {
+        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.data());
+        game.addNotification("Player #" + std::to_string(p_nbr) + " broadcasted a message: " + msg);
         game.getPlayer(p_nbr).startBroadcast();
     }
     return 0;
@@ -322,13 +327,13 @@ int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &ser
 **/
 int Zappy::Core::pfk(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-    // int p_nbr;
+    int p_nbr;
 
     (void)game;
     (void)server;
     (void)message;
-    // if (sscanf(message.c_str(), "pfk %d", &p_nbr) == 1)
-    // TODO: Joue l'animation de ponte d'œuf pour le joueur p_nbr
+    if (sscanf(message.c_str(), "pfk %d", &p_nbr) == 1)
+        game.addNotification("Player #" + std::to_string(p_nbr) + " laid an egg.");
     return 0;
 }
 
@@ -396,8 +401,10 @@ int Zappy::Core::pdi(std::string message, Zappy::Game &game, Zappy::Network &ser
     int p_nbr;
 
     (void)server;
-    if (sscanf(message.c_str(), "pdi #%d", &p_nbr) == 1)
+    if (sscanf(message.c_str(), "pdi #%d", &p_nbr) == 1) {
         game.removePlayer(p_nbr);
+        game.addNotification("Player #" + std::to_string(p_nbr) + " died.");
+    }
     return 0;
 }
 
@@ -443,8 +450,10 @@ int Zappy::Core::ebo(std::string message, Zappy::Game &game, Zappy::Network &ser
     int e_nbr;
 
     (void)server;
-    if (sscanf(message.c_str(), "ebo #%d", &e_nbr) == 1)
+    if (sscanf(message.c_str(), "ebo #%d", &e_nbr) == 1) {
         game.removeEgg(e_nbr);
+        game.addNotification("Egg #" + std::to_string(e_nbr) + " is hatching, a new player will be born.");
+    }
     return 0;
 }
 
@@ -460,8 +469,10 @@ int Zappy::Core::edi(std::string message, Zappy::Game &game, Zappy::Network &ser
     int e_nbr;
 
     (void)server;
-    if (sscanf(message.c_str(), "edi #%d", &e_nbr) == 1)
+    if (sscanf(message.c_str(), "edi #%d", &e_nbr) == 1) {
         game.removeEgg(e_nbr);
+        game.addNotification("Egg #" + std::to_string(e_nbr) + " destroyed.");
+    }
     return 0;
 }
 
@@ -512,8 +523,10 @@ int Zappy::Core::smg(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)server;
     (void)game;
-    if (sscanf(message.c_str(), "smg #%d", &m) == 1)
+    if (sscanf(message.c_str(), "smg #%d", &m) == 1) {
         printf("Message from server: %d\n", m);
+        game.addNotification("Message from server: " + std::to_string(m));
+    }
     return 0;
 }
 

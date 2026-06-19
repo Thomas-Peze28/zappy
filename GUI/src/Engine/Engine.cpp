@@ -361,6 +361,10 @@ void Zappy::Engine::render2D(const Zappy::Game &game)
 
     Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {10.0f, 110.0f}, 20.0f, BLACK);
     timeUnitText.draw();
+
+    _hud.update();
+    _hud.setMessages(game.getNotifications());
+    _hud.draw();
 }
 
 /**
