@@ -257,3 +257,28 @@ bool Zappy::Player::isBroadcasting() const
 {
     return _broadcastTimer > 0.0f;
 }
+
+/**
+* @brief Starts the incantation animation for the player.
+**/
+void Zappy::Player::startIncantation()
+{
+    _isIncanting = true;
+}
+
+/**
+* @brief Checks if the player is currently incanting.
+* @return True if the player is incanting, false otherwise.
+**/
+bool Zappy::Player::isIncanting() const
+{
+    return _isIncanting;
+}
+
+/**
+* @brief Stops the incantation animation for the player.
+**/
+void Zappy::Player::stopIncantation()
+{
+    _isIncanting = false;
+}

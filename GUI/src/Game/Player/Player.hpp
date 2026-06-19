@@ -58,6 +58,10 @@ namespace Zappy
             void startBroadcast();
             bool isBroadcasting() const;
 
+            void startIncantation();
+            bool isIncanting() const;
+            void stopIncantation();
+
         private:
             int _id;
             std::string _name;
@@ -70,6 +74,7 @@ namespace Zappy
             Direction _direction;
             std::unordered_map<RESSOURCE, int> _inventory;
             float _broadcastTimer;
+            bool _isIncanting;
     };
 };
 

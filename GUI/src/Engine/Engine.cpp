@@ -289,7 +289,7 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
         if (player.isBroadcasting()) {
             Vector3 headPos = {xPos, 1.5f + jumpHeight, zPos};
 
-            renderWavesAnimation(headPos, BLUE, 0.5f, 1.0f);
+            renderWavesAnimation(headPos, BLUE, 0.3f, 1.0f);
         }
     }
 }
@@ -330,11 +330,11 @@ void Zappy::Engine::renderWavesAnimation(Vector3 position, Color color, float ra
 
     for (int i = 0; i < 3; i++) {
         float phase = std::fmod(waveSpeed + (i * 0.33f), 1.0f);
-        float radius = 0.05f + (phase * 0.8f);
+        float currentRadius = radius + phase * 0.5f;
         unsigned char alpha = static_cast<unsigned char>((1.0f - phase) * 255.0f);
         Color waveColor = { color.r, color.g, color.b, alpha }; 
         
-        DrawCylinderWires(position, radius, radius, 0.01f, 16, waveColor);
+        DrawCylinderWires(position, currentRadius, currentRadius, 0.01f, 16, waveColor);
     }
 }
 
