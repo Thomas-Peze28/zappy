@@ -400,8 +400,10 @@ int Zappy::Core::pdi(std::string message, Zappy::Game &game, Zappy::Network &ser
     int p_nbr;
 
     (void)server;
-    if (sscanf(message.c_str(), "pdi #%d", &p_nbr) == 1)
+    if (sscanf(message.c_str(), "pdi #%d", &p_nbr) == 1) {
         game.removePlayer(p_nbr);
+        game.addNotification("Player #" + std::to_string(p_nbr) + " died.");
+    }
     return 0;
 }
 
