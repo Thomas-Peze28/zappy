@@ -19,6 +19,7 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"plv", &Zappy::Core::plv},
         {"pin", &Zappy::Core::pin},
         {"pex", &Zappy::Core::pex},
+        {"pbc", &Zappy::Core::pbc},
         {"pic", &Zappy::Core::pic},
         {"pie", &Zappy::Core::pie},
         {"pfk", &Zappy::Core::pfk},
@@ -30,7 +31,9 @@ int Zappy::Core::handleCommands(std::string message, Zappy::Game &game, Zappy::N
         {"edi", &Zappy::Core::edi},
         {"sgt", &Zappy::Core::sgt},
         {"sst", &Zappy::Core::sst},
-        // ...
+        {"smg", &Zappy::Core::smg},
+        {"sbp", &Zappy::Core::sbp},
+        {"suc", &Zappy::Core::suc}
     };
 
     for (const auto& [cmd, handler] : commands) {
@@ -241,6 +244,26 @@ int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &ser
     if (sscanf(message.c_str(), "pex #%d", &p_nbr) == 1)
     // TODO: Joue une animation d'expulsion pour le joueur p_nbr
         server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
+    return 0;
+}
+
+/**
+* Handles the "pbc" command for player broadcast.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::pbc(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int p_nbr;
+    std::string msg;
+
+    (void)game;
+    (void)server;
+    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.c_str()) == 2)
+    // TODO: Mettre le message dans l'HUD
+        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.c_str());
     return 0;
 }
 
@@ -471,5 +494,55 @@ int Zappy::Core::sst(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)server;
     if (sscanf(message.c_str(), "sst %d", &t) == 1)
         game.setTimeUnit(t);
+    return 0;
+}
+
+/**
+* Handles the "smg" command for the messages of the server.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::smg(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    int m;
+
+    (void)server;
+    (void)game;
+    if (sscanf(message.c_str(), "smg #%d", &m) == 1)
+        printf("Message from server: %d\n", m);
+    return 0;
+}
+
+/**
+* Handles the "suc" command for unknown command.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::suc(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    (void)server;
+    (void)game;
+    if (sscanf(message.c_str(), "suc") == 0)
+        printf("Unknown command sent to server\n");
+    return 0;
+}
+
+/**
+* Handles the "sbp" command for bad parameters.
+* @param message The command message.
+* @param game The game instance.
+* @param server The network instance.
+* @return 0 on success, or an error code on failure.
+**/
+int Zappy::Core::sbp(std::string message, Zappy::Game &game, Zappy::Network &server)
+{
+    (void)server;
+    (void)game;
+    if (sscanf(message.c_str(), "sbp") == 0)
+        printf("Bad parameters sent to server on last command\n");
     return 0;
 }

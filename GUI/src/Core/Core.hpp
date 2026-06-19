@@ -48,6 +48,7 @@ namespace Zappy
             int plv(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pin(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pex(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int pbc(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pic(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pie(std::string message, Zappy::Game &game, Zappy::Network &server);
             int pfk(std::string message, Zappy::Game &game, Zappy::Network &server);
@@ -59,6 +60,9 @@ namespace Zappy
             int edi(std::string message, Zappy::Game &game, Zappy::Network &server);
             int sgt(std::string message, Zappy::Game &game, Zappy::Network &server);
             int sst(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int smg(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int suc(std::string message, Zappy::Game &game, Zappy::Network &server);
+            int sbp(std::string message, Zappy::Game &game, Zappy::Network &server);
 
         private:
             int _argc;
