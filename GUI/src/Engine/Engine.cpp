@@ -20,8 +20,6 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _playerModel->rotateModelX(90.0f);
-    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -54,8 +52,6 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _playerModel->rotateModelX(90.0f);
-    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -244,7 +240,6 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
     float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
     float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
 
-    _playerModel->updateAnimation();
 
     for (const auto &[id, player] : game.getPlayers()) {
         float xPos = player.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
@@ -266,7 +261,19 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
                 break;
         }
 
-        _playerModel->draw({xPos, 0.15f, zPos}, Z_AXIS, rotationAngle, 0.010f, WHITE);
+        int animIndex = 1;
+
+        _playerAnimFrames[id]++;
+        
+        int maxFrames = _playerModel->getAnimFrameCount(animIndex);
+        if (maxFrames > 0 && _playerAnimFrames[id] >= maxFrames) {
+            _playerAnimFrames[id] = 0;
+        }
+
+        _playerModel->applyAnimation(animIndex, _playerAnimFrames[id]);
+
+        _playerModel->drawStanding({xPos, 0.15f, zPos}, rotationAngle, 0.010f, WHITE);
+
     }
 }
 
