@@ -40,6 +40,8 @@ namespace Zappy
 
             int getTimeUnit() const;
             void setTimeUnit(int timeUnit);
+
+            void update(float deltaTime);
         
         private:
             Map _map;

@@ -98,7 +98,7 @@ test_gui:
 	trap 'kill $$ai_pid $$server_pid 2>/dev/null || true' EXIT; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
 	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
-	./test/zappy_test_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 5 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
+	./test/zappy_test_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
 	sleep 1; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
 	$(MAKE) --no-print-directory -C ../AI; \

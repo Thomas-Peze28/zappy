@@ -20,8 +20,6 @@ Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _playerModel->rotateModelX(90.0f);
-    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -54,8 +52,6 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
     _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
     _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _playerModel->rotateModelX(90.0f);
-    _playerModel->setAnimation(1);
     _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
 }
 
@@ -244,11 +240,10 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
     float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
     float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
 
-    _playerModel->updateAnimation();
 
     for (const auto &[id, player] : game.getPlayers()) {
-        float xPos = player.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
-        float zPos = player.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
+        float xPos = player.getXVisual() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
+        float zPos = player.getYVisual() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
 
         float rotationAngle = 0.0f;
         switch (player.getDirection()) {
@@ -266,7 +261,31 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
                 break;
         }
 
-        _playerModel->draw({xPos, 0.15f, zPos}, Z_AXIS, rotationAngle, 0.010f, WHITE);
+        float dx = player.getX() - player.getXVisual();
+        float dy = player.getY() - player.getYVisual();
+        float distance = std::sqrt(dx * dx + dy * dy);
+
+        bool isMoving = distance > 0.01f;
+
+        float jumpHeight = 0.0f;
+        if (isMoving)
+            jumpHeight = std::sin(std::fmin(distance, 1.0f) * PI) * 0.5f;
+    
+        int animIndex = PLAYER_IDLE_ANIM;
+        if (isMoving)
+            animIndex = PLAYER_JUMP_ANIM;
+
+        _playerAnimFrames[id]++;
+        
+        int maxFrames = _playerModel->getAnimFrameCount(animIndex);
+        if (maxFrames > 0 && _playerAnimFrames[id] >= maxFrames) {
+            _playerAnimFrames[id] = 0;
+        }
+
+        _playerModel->applyAnimation(animIndex, _playerAnimFrames[id]);
+
+        _playerModel->drawStanding({xPos, 0.15f + jumpHeight, zPos}, rotationAngle, 0.010f, WHITE);
+
     }
 }
 

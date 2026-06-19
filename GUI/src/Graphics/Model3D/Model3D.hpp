@@ -27,12 +27,13 @@ namespace Zappy
 
             void draw(const Vector3 &position, float scale, Color tint) const;
             void draw(const Vector3 &position, const Vector3 &rotationAxis, float rotationAngle, float scale, Color tint) const;
+            void drawStanding(Vector3 position, float rotationAngleY, float scale, Color color) const;
 
             float getWidth() const;
             float getDepth() const;
 
-            void setAnimation(int animIndex);
-            void updateAnimation();
+            void applyAnimation(int animIndex, int frame);
+            int getAnimFrameCount(int animIndex) const;
             void rotateModelX(float angleDegrees);
 
         private:

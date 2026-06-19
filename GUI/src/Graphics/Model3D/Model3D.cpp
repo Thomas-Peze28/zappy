@@ -75,6 +75,26 @@ void Zappy::Model3D::draw(const Vector3 &position, const Vector3 &rotationAxis, 
 }
 
 /**
+* Draws the 3D model standing at the specified position, with the given rotation and scale.
+* @param position The position in 3D space where the model should be drawn.
+* @param rotationAngleY The angle of rotation around the Y-axis in degrees.
+* @param scale The scale factor to apply to the model when drawing.
+* @param color The color tint to apply to the model when drawing.
+**/
+void Zappy::Model3D::drawStanding(Vector3 position, float rotationAngleY, float scale, Color color) const
+{
+    Quaternion qStand = QuaternionFromAxisAngle({1.0f, 0.0f, 0.0f}, 90.0f * DEG2RAD);
+    Quaternion qDir = QuaternionFromAxisAngle({0.0f, 1.0f, 0.0f}, rotationAngleY * DEG2RAD);
+    Quaternion qFinal = QuaternionMultiply(qDir, qStand);
+
+    Vector3 finalAxis;
+    float finalAngle;
+    QuaternionToAxisAngle(qFinal, &finalAxis, &finalAngle);
+
+    DrawModelEx(_model, position, finalAxis, finalAngle * RAD2DEG, {scale, scale, scale}, color);
+}
+
+/**
 * Returns the width of the 3D model.
 * @return The width of the model as a float.
 **/
@@ -93,33 +113,28 @@ float Zappy::Model3D::getDepth() const
 }
 
 /**
-* Sets the current animation of the model to the specified index.
-* @param animIndex The index of the animation to set.
-* @note If the specified index is out of bounds, the current animation will not be changed
+* Applies the specified animation frame to the model.
+* @param animIndex The index of the animation to apply.
+* @param frame The frame number to apply.
 **/
-void Zappy::Model3D::setAnimation(int animIndex)
+void Zappy::Model3D::applyAnimation(int animIndex, int frame)
 {
-    if (animIndex >= 0 && animIndex < _animCount) {
-        _currentAnimIndex = animIndex;
-        _animFrameCounter = 0;
+    if (_animations != nullptr && animIndex < _animCount) {
+        UpdateModelAnimation(_model, _animations[animIndex], frame);
     }
 }
 
 /**
-* Updates the animation of the model.
-* @note This function should be called every frame to update the animation.
+* Returns the number of frames in the specified animation.
+* @param animIndex The index of the animation.
+* @return The number of frames in the animation.
 **/
-void Zappy::Model3D::updateAnimation()
+int Zappy::Model3D::getAnimFrameCount(int animIndex) const
 {
-    if (_animCount > 0 && _animations != nullptr) {
-        _animFrameCounter++;
-
-        if (_animFrameCounter >= _animations[_currentAnimIndex].keyframeCount) {
-            _animFrameCounter = 0;
-        }
-
-        UpdateModelAnimation(_model, _animations[_currentAnimIndex], _animFrameCounter);
+    if (_animations != nullptr && animIndex < _animCount) {
+        return _animations[animIndex].keyframeCount;
     }
+    return 0;
 }
 
 /**

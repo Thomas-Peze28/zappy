@@ -32,6 +32,10 @@
     #include "Game.hpp"
     #include "Tile.hpp"
 
+    #define PLAYER_JUMP_ANIM 0
+    #define PLAYER_IDLE_ANIM 1
+    #define PLAYER_WALK_ANIM 2
+
 namespace Zappy
 {
     class Engine
@@ -58,10 +62,13 @@ namespace Zappy
             Zappy::AudioDevice _audioDevice;
             Zappy::Window _window;
             Zappy::Camera _camera;
-            
+
             Zappy::Model3D _hexTile;
             std::unordered_map<Zappy::RESSOURCE, std::unique_ptr<Zappy::Model3D>> _resourceModels;
+        
             std::unique_ptr<Zappy::Model3D> _playerModel;
+            mutable std::unordered_map<int, int> _playerAnimFrames;
+    
             std::unique_ptr<Zappy::Model3D> _eggModel;
 
             Zappy::Font _mainFont;

@@ -42,6 +42,9 @@ namespace Zappy
             Direction getDirection() const;
             int getResource(RESSOURCE type) const;
             const std::unordered_map<RESSOURCE, int>& getInventory() const;
+            float getXVisual() const;
+            float getYVisual() const;
+            void updateVisual(float deltaTime);
 
             void setId(int id);
             void setName(const std::string &name);
@@ -50,7 +53,8 @@ namespace Zappy
             void setLevel(int level);
             void setInventory(int food, int linemate, int deraumere, int sibur, int mendiane, int phiras, int thystame);
             void setRessource(RESSOURCE type, int quantity);
-        
+            void setPositionVisual(float xVisual, float yVisual);
+
         private:
             int _id;
             std::string _name;
@@ -58,6 +62,8 @@ namespace Zappy
             int _level;
             int _x;
             int _y;
+            float _xVisual;
+            float _yVisual;
             Direction _direction;
             std::unordered_map<RESSOURCE, int> _inventory;
     };

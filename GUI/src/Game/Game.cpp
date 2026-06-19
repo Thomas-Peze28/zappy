@@ -124,3 +124,14 @@ void Zappy::Game::setTimeUnit(int timeUnit)
 {
     time_unit = timeUnit;
 }
+
+/**
+* @brief Updates the visual game state.
+* @param deltaTime The time elapsed since the last update.
+**/
+void Zappy::Game::update(float deltaTime)
+{
+    for (auto &[id, player] : _players) {
+        player.updateVisual(deltaTime);
+    }
+}

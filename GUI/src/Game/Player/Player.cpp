@@ -11,7 +11,7 @@
 * @brief Constructs a new Player object with default values.
 **/
 Zappy::Player::Player()
-    : _id(0), _name(""), _teamName(""), _level(1), _x(0), _y(0), _direction(Direction::NORTH), _inventory()
+    : _id(0), _name(""), _teamName(""), _level(1), _x(0), _y(0), _xVisual(0), _yVisual(0), _direction(Direction::NORTH), _inventory()
 {
 }
 
@@ -26,7 +26,7 @@ Zappy::Player::Player()
 * @param direction The direction in which the player is facing.
 **/
 Zappy::Player::Player(int id, const std::string &name, const std::string &teamName, int level, int x, int y, Direction direction)
-    : _id(id), _name(name), _teamName(teamName), _level(level), _x(x), _y(y), _direction(direction), _inventory()
+    : _id(id), _name(name), _teamName(teamName), _level(level), _x(x), _y(y), _xVisual(x), _yVisual(y), _direction(direction), _inventory()
 {
 }
 
@@ -82,6 +82,32 @@ int Zappy::Player::getX() const
 int Zappy::Player::getY() const
 {
     return _y;
+}
+
+/**
+* @brief Gets the x-coordinate of the player's visual position.
+* @return The x-coordinate of the player's visual position.
+**/
+float Zappy::Player::getXVisual() const
+{
+    return _xVisual;
+}
+
+/**
+* @brief Gets the y-coordinate of the player's visual position.
+* @return The y-coordinate of the player's visual position.
+**/
+float Zappy::Player::getYVisual() const
+{
+    return _yVisual;
+}
+
+void Zappy::Player::updateVisual(float deltaTime)
+{
+    float speed = 5.0f;
+
+    _xVisual += (_x - _xVisual) * speed * deltaTime;
+    _yVisual += (_y - _yVisual) * speed * deltaTime;
 }
 
 /**
@@ -161,6 +187,16 @@ void Zappy::Player::setPosition(int x, int y, Direction direction)
     _direction = direction;
 }
 
+/**
+* @brief Sets the visual position of the player.
+* @param xVisual The x-coordinate of the player's visual position.
+* @param yVisual The y-coordinate of the player's visual position.
+**/
+void Zappy::Player::setPositionVisual(float xVisual, float yVisual)
+{
+    _xVisual = xVisual;
+    _yVisual = yVisual;
+}
 
 /**
 * @brief Sets the level of the player.
