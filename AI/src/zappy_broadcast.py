@@ -68,9 +68,9 @@ class ZappyBroadcastCoordinator:
 
         if text.startswith("message "):
             try:
-                parts = text.split(", ", 1)
+                parts = text.split(",", 1)
                 direction = int(parts[0].split()[1])
-                text = parts[1]
+                text = parts[1].strip()
             except (IndexError, ValueError):
                 return None
 

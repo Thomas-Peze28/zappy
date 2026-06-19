@@ -171,7 +171,15 @@ class ZappyAI:
         if not frame:
             return
 
-        if frame.level != self.level + 1 or self.inventory.get("food", 0) <= 10:
+        if frame.get("kind") != "elevation-request":
+            return
+
+        target_level = frame.get("level", 0)
+
+        if target_level != self.level + 1:
+            return
+
+        if self.inventory.get("food", 0) <= 10:
             return
 
         if not self.broadcast.should_follow(frame):
@@ -179,9 +187,11 @@ class ZappyAI:
 
         self.command_queue.clear()
         self.state = DroneState.JOIN_ELEVATION
+
         if k == 0:
             print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Arrive sur la case du leader.")
         else:
+            print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Je rejoins le broadcast direction {k}.")
             self._move_to_sound(k)
 
     def _move_to_sound(self, k):
@@ -331,16 +341,19 @@ class ZappyAI:
             req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
             if not req:
                 return
-            players_on_tile = (self.vision[0].count("player") if self.vision else 0) + 1
+
+            players_on_tile = self.vision[0].count("player") if self.vision else 0
+
             if players_on_tile < req[0]:
                 if self.broadcast.can_announce():
                     payload = {
                         "players": players_on_tile,
+                        "required": req[0],
                         "food": self.inventory.get("food", 0),
                         "missing": self._missing_stones(),
                     }
                     self.queue_command(
-                        f"Broadcast {self.broadcast.build_elevation_broadcast(self.level + 1, payload)}"
+                        f"Broadcast {self.broadcast.build_elevation_packet(self.level + 1, payload)}"
                     )
             else:
                 for i, stone in enumerate(self.STONES):
