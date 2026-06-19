@@ -113,7 +113,6 @@ int Zappy::Core::run()
             std::cout << "Received: " << message << std::endl;
             handleCommands(message, game, network); 
         }
-        game.getPlayer(1).startBroadcast();
         float deltaTime = GetFrameTime();
         game.update(deltaTime);
         display.render(game);
