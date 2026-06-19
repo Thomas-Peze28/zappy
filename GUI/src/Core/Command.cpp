@@ -115,13 +115,16 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
 **/
 int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-//     std::string teamName;
+    char teamName[128] = {0};
 
     (void)game;
     (void)server;
     (void)message;
-//     if (sscanf(message.c_str(), "tna %s", teamName.data()) == 1)
+    if (sscanf(message.c_str(), "tna %127s", teamName) == 1) {
+        std::string teamNameStr(teamName);
+        game.addNotification("New team: " + teamNameStr);
 //         TODO: Ajoute teamName à la liste des équipes et y assigne une couleur
+    }
     return 0;
 }
 
@@ -139,14 +142,15 @@ int Zappy::Core::pnw(std::string message, Zappy::Game &game, Zappy::Network &ser
     int y;
     int d;
     int l;
-    std::string teamName;
+    char teamName[128] = {0};
     Direction direction;
 
-    (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %s", &p_nbr, &x, &y, &d, &l, teamName.data()) == 6) {
+    if (sscanf(message.c_str(), "pnw #%d %d %d %d %d %127s", &p_nbr, &x, &y, &d, &l, teamName) == 6) {
         direction = static_cast<Direction>(d);
-        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamName, l, x, y, direction));
+        std::string teamNameStr(teamName);
+        game.addPlayer(Zappy::Player(p_nbr, "Player" + std::to_string(p_nbr), teamNameStr, l, x, y, direction));
+        game.addNotification("Player #" + std::to_string(p_nbr) + " connected to " + teamNameStr);
     }
     return 0;
 }

@@ -6,6 +6,7 @@
 */
 
 #include "Hud.hpp"
+#include "Input.hpp"
 
 using Zappy::Input;
 
@@ -41,9 +42,9 @@ void Zappy::Hud::update()
 	}
 	float dt = GetFrameTime();
 	float diff = _targetX - _currentX;
-	if (fabs(diff) > 0.5f) {
+	if (std::fabs(diff) > 0.5f) {
 		float move = _animSpeed * dt;
-		if (fabs(diff) <= move)
+		if (std::fabs(diff) <= move)
 			_currentX = _targetX;
 		else {
             if (diff > 0)
@@ -52,6 +53,11 @@ void Zappy::Hud::update()
                 _currentX -= move;
         }
 	}
+}
+
+void Zappy::Hud::setMessages(const std::vector<std::string> &messages)
+{
+	_messages = messages;
 }
 
 void Zappy::Hud::draw() const
@@ -63,9 +69,43 @@ void Zappy::Hud::draw() const
 	}
 	Rectangle panel = { _currentX, 0.0f, _panelWidth, (float)GetScreenHeight() };
 	DrawRectangleRec(panel, _panelColor);
+
+	if (!_messages.empty() && _currentX < GetScreenWidth()) {
+		float textX = _currentX + 16.0f;
+		float textY = 16.0f;
+		int fontSize = 18;
+		for (const auto &message : _messages) {
+			DrawText(message.c_str(), (int)textX, (int)textY, fontSize, WHITE);
+			textY += fontSize + 8;
+			if (textY + fontSize > GetScreenHeight())
+				break;
+		}
+	}
 }
 
 bool Zappy::Hud::isOpen() const
 {
 	return _open;
 }
+
+// TODO: essayer de fix le toggle bar au moment du passage en fullscreen
+
+// void Zappy::Hud::setPanelWidth(float width)
+// {
+//     _panelWidth = width;
+// }
+
+// void Zappy::Hud::setButtonRectX(const Rectangle &rect)
+// {
+//     _buttonRect.x = rect.x;
+// }
+
+// void Zappy::Hud::setCurrentX(const Rectangle &rect)
+// {
+//     _currentX = rect.x;
+// }
+
+// const Rectangle &Zappy::Hud::getButtonRect(void) const
+// {
+//     return _buttonRect;
+// }

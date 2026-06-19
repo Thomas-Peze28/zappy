@@ -9,7 +9,8 @@
 #define HUD_HPP_
 
 #include "raylib.h"
-#include "Input.hpp"
+#include <vector>
+#include <string>
 #include <cmath>
 
 namespace Zappy
@@ -21,7 +22,13 @@ namespace Zappy
 
             void update();
             void draw() const;
+            void setMessages(const std::vector<std::string> &messages);
             bool isOpen() const;
+// TODO: essayer de fix le toggle bar au moment du passage en fullscreen
+            // void setPanelWidth(float width);
+            // void setButtonRectX(const Rectangle &rect);
+            // void setCurrentX(const Rectangle &rect);
+            // const Rectangle &getButtonRect(void) const;
 
         protected:
         private:
@@ -32,6 +39,7 @@ namespace Zappy
             float _animSpeed;
             Rectangle _buttonRect;
             Color _panelColor;
+            std::vector<std::string> _messages;
     };
 };
 

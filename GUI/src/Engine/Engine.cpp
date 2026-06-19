@@ -317,8 +317,8 @@ void Zappy::Engine::render2D(const Zappy::Game &game)
     Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {10.0f, 110.0f}, 20.0f, BLACK);
     timeUnitText.draw();
 
-    // HUD (update + draw) - drawn last so it's above other UI
     _hud.update();
+    _hud.setMessages(game.getNotifications());
     _hud.draw();
 }
 

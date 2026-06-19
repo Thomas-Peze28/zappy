@@ -42,6 +42,18 @@ void Zappy::Game::addPlayer(const Player& player)
     _players[player.getId()] = player;
 }
 
+void Zappy::Game::addNotification(const std::string &message)
+{
+    _notifications.push_back(message);
+    if (_notifications.size() > 5)
+        _notifications.erase(_notifications.begin());
+}
+
+const std::vector<std::string> &Zappy::Game::getNotifications() const
+{
+    return _notifications;
+}
+
 /**
 * @brief Removes a player from the game.
 * @param id The ID of the player to remove.
