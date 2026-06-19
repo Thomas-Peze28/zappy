@@ -240,8 +240,8 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
     float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
     float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
 
-
     for (const auto &[id, player] : game.getPlayers()) {
+
         float xPos = player.getXVisual() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
         float zPos = player.getYVisual() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
 
@@ -286,6 +286,11 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
 
         _playerModel->drawStanding({xPos, 0.15f + jumpHeight, zPos}, rotationAngle, 0.010f, WHITE);
 
+        if (player.isBroadcasting()) {
+            Vector3 headPos = {xPos, 1.5f + jumpHeight, zPos};
+
+            renderWavesAnimation(headPos, BLUE, 0.5f, 1.0f);
+        }
     }
 }
 
@@ -309,6 +314,27 @@ void Zappy::Engine::renderEgg(const Zappy::Game &game) const
         float xPos = egg.getX() * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
         float zPos = egg.getY() * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
         _eggModel->draw({xPos, 0.3f, zPos}, 1.0f, WHITE);
+    }
+}
+
+void Zappy::Engine::renderWireSphereAnimation(Vector3 position, Color color, float radius, float speed) const
+{
+    float pulse = (std::sin(GetTime() * speed) + 1.0f) * 0.05f; 
+
+    DrawSphereWires(position, radius + pulse, 8, 8, color);
+}
+
+void Zappy::Engine::renderWavesAnimation(Vector3 position, Color color, float radius, float speed) const
+{
+    float waveSpeed = GetTime() * speed; 
+
+    for (int i = 0; i < 3; i++) {
+        float phase = std::fmod(waveSpeed + (i * 0.33f), 1.0f);
+        float radius = 0.05f + (phase * 0.8f);
+        unsigned char alpha = static_cast<unsigned char>((1.0f - phase) * 255.0f);
+        Color waveColor = { color.r, color.g, color.b, alpha }; 
+        
+        DrawCylinderWires(position, radius, radius, 0.01f, 16, waveColor);
     }
 }
 
