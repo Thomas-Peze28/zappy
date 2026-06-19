@@ -31,6 +31,7 @@
     #include "Music.hpp"
     #include "Game.hpp"
     #include "Tile.hpp"
+    #include "Shape3D.hpp"
 
     #define PLAYER_JUMP_ANIM 0
     #define PLAYER_IDLE_ANIM 1
@@ -52,6 +53,9 @@ namespace Zappy
             void renderResource(const Zappy::Tile &tile, float x, float y, float z) const;
             void renderPlayer(const Zappy::Game &game) const;
             void renderEgg(const Zappy::Game &game) const;
+
+            void renderWavesAnimation(Vector3 position, Color color, float radius, float speed) const;
+            void renderWireSphereAnimation(Vector3 position, Color color, float radius, float speed) const;
 
             void nextCameraMode();
         
