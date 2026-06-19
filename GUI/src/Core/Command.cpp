@@ -522,8 +522,10 @@ int Zappy::Core::smg(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)server;
     (void)game;
-    if (sscanf(message.c_str(), "smg #%d", &m) == 1)
+    if (sscanf(message.c_str(), "smg #%d", &m) == 1) {
         printf("Message from server: %d\n", m);
+        game.addNotification("Message from server: " + std::to_string(m));
+    }
     return 0;
 }
 
