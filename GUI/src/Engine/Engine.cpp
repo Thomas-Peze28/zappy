@@ -288,8 +288,12 @@ void Zappy::Engine::renderPlayer(const Zappy::Game &game) const
 
         if (player.isBroadcasting()) {
             Vector3 headPos = {xPos, 1.5f + jumpHeight, zPos};
-
             renderWavesAnimation(headPos, BLUE, 0.3f, 1.0f);
+        }
+
+        if (player.isIncanting()) {
+            Vector3 headPos = {xPos, 0.5f + jumpHeight, zPos};
+            renderWireSphereAnimation(headPos, YELLOW, 0.9f, 20.0f);
         }
     }
 }

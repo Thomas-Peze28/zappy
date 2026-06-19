@@ -284,16 +284,16 @@ player).
 **/
 int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-    // int x;
-    // int y;
-    // int l;
-    // int p_nbr;
+    int x;
+    int y;
+    int l;
+    int p_nbr;
 
     (void)game;
     (void)server;
     (void)message;
-    // if (sscanf(message.c_str(), "pin %d %d %d #%d", &x, &y, &l, &p_nbr))
-    // TODO: Joue une animation d'incantation pour le joueur p_nbr
+    if (sscanf(message.c_str(), "pic %d %d %d #%d", &x, &y, &l, &p_nbr))
+        game.getPlayer(p_nbr).startIncantation();
     return 0;
 }
 
@@ -306,15 +306,21 @@ int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &ser
 **/
 int Zappy::Core::pie(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-    // int x;
-    // int y;
-    // int r;
+    int x;
+    int y;
+    int r;
 
     (void)game;
     (void)server;
     (void)message;
-    // if (sscanf(message.c_str(), "pie %d %d %d", &x, &y, &r) == 3)
-    // TODO: Arrêter l'animation d'incantation pour le joueur qui est en incantation
+    if (sscanf(message.c_str(), "pie %d %d %d", &x, &y, &r) == 3) {
+        for (const auto &[id, player] : game.getPlayers()) {
+            if (player.getX() == x && player.getY() == y && player.isIncanting()) {
+                game.getPlayer(id).stopIncantation();
+            }
+        }
+    }
+        
     return 0;
 }
 

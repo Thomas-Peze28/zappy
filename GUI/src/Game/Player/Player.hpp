@@ -59,8 +59,8 @@ namespace Zappy
             bool isBroadcasting() const;
 
             void startIncantation();
-            bool isIncanting() const;
             void stopIncantation();
+            bool isIncanting() const;
 
         private:
             int _id;
