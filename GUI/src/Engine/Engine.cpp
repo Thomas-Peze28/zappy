@@ -127,6 +127,12 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
 
+    if (Zappy::Input::isKeyPressed(KEY_L))
+    {
+        std::cout << "Toggle HUD" << std::endl;
+    }
+
+
     return 0;
 }
 
