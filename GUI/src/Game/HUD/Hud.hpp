@@ -5,8 +5,7 @@
 ** Hud
 */
 
-#ifndef HUD_HPP_
-#define HUD_HPP_
+#pragma once
 
 #include "raylib.h"
 #include <vector>
@@ -18,13 +17,17 @@ namespace Zappy
     class Hud {
         public:
             Hud();
-            ~Hud();
+            ~Hud() = default;
 
             void update();
             void draw() const;
             void setMessages(const std::vector<std::string> &messages);
             bool isOpen() const;
-// TODO: essayer de fix le toggle bar au moment du passage en fullscreen
+            void toggleOpen();
+            void setOpening(bool open);
+
+
+            // TODO: essayer de fix le toggle bar au moment du passage en fullscreen
             // void setPanelWidth(float width);
             // void setButtonRectX(const Rectangle &rect);
             // void setCurrentX(const Rectangle &rect);
@@ -42,5 +45,3 @@ namespace Zappy
             std::vector<std::string> _messages;
     };
 };
-
-#endif /* !HUD_HPP_ */

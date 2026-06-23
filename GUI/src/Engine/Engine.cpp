@@ -94,6 +94,7 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
     if (Zappy::Input::isKeyPressed(KEY_F))
     {
         _window.toggleFullscreen();
+        _hud.toggleOpen();
     }
 
     if (Zappy::Input::isKeyPressed(KEY_C))
@@ -129,9 +130,8 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
 
     if (Zappy::Input::isKeyPressed(KEY_L))
     {
-        std::cout << "Toggle HUD" << std::endl;
+        _hud.toggleOpen();
     }
-
 
     return 0;
 }

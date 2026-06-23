@@ -8,8 +8,9 @@
 #include "Hud.hpp"
 #include "Input.hpp"
 
-using Zappy::Input;
-
+/**
+* @brief Constructor for the Hud class.
+**/
 Zappy::Hud::Hud()
 {
 	_open = false;
@@ -21,10 +22,9 @@ Zappy::Hud::Hud()
 	_panelColor = { 0, 0, 0, 150 };
 }
 
-Zappy::Hud::~Hud()
-{
-}
-
+/**
+* @brief Updates the HUD.
+**/
 void Zappy::Hud::update()
 {
 	_panelWidth = (float)GetScreenWidth() / 4.0f;
@@ -33,11 +33,7 @@ void Zappy::Hud::update()
 	if (Input::isMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		if (mouse.x >= _buttonRect.x && mouse.x <= _buttonRect.x + _buttonRect.width
 			&& mouse.y >= _buttonRect.y && mouse.y <= _buttonRect.y + _buttonRect.height) {
-			_open = !_open;
-			if (_open)
-				_targetX = (float)GetScreenWidth() - _panelWidth;
-			else
-				_targetX = (float)GetScreenWidth();
+			toggleOpen();
 		}
 	}
 	float dt = GetFrameTime();
@@ -55,11 +51,18 @@ void Zappy::Hud::update()
 	}
 }
 
+/**
+* @brief Sets the messages to be displayed in the HUD.
+* @param messages The vector of strings containing the messages.
+**/
 void Zappy::Hud::setMessages(const std::vector<std::string> &messages)
 {
 	_messages = messages;
 }
 
+/**
+* @brief Draws the HUD.
+**/
 void Zappy::Hud::draw() const
 {
 	DrawRectangleRec(_buttonRect, LIGHTGRAY);
@@ -83,9 +86,34 @@ void Zappy::Hud::draw() const
 	}
 }
 
+/**
+* @brief Checks if the HUD is open.
+* @return True if the HUD is open, false otherwise.
+*/
 bool Zappy::Hud::isOpen() const
 {
 	return _open;
+}
+
+/**
+* @brief Toggles the open state of the HUD.
+**/
+void Zappy::Hud::toggleOpen()
+{
+	_open = !_open;
+	if (_open)
+		_targetX = (float)GetScreenWidth() - _panelWidth;
+	else
+		_targetX = (float)GetScreenWidth();
+}
+
+/**
+* @brief Sets the opening state of the HUD.
+* @param open The new opening state of the HUD.
+**/
+void Zappy::Hud::setOpening(bool open)
+{
+	_open = open;
 }
 
 // TODO: essayer de fix le toggle bar au moment du passage en fullscreen
