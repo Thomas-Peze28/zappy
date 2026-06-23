@@ -261,14 +261,19 @@ int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &ser
 **/
 int Zappy::Core::pbc(std::string message, Zappy::Game &game, Zappy::Network &server)
 {
-    int p_nbr;
-    std::string msg;
-
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pbc #%d %s", &p_nbr, msg.data()) == 2) {
-        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.data());
-        game.addNotification("Player #" + std::to_string(p_nbr) + " broadcasted a message: " + msg);
+    int p_nbr;
+    std::string msg;
+    size_t space;
+
+    if (sscanf(message.c_str(), "pbc #%d", &p_nbr) == 1) {
+        space = message.find(' ');
+        if (space != std::string::npos)
+            msg = message.substr(space + 1);
+
+        printf("Player %d broadcasted a message : %s\n", p_nbr, msg.c_str());
+        game.addNotification("Player #" + std::to_string(p_nbr) + " broadcasted a message");
         game.getPlayer(p_nbr).startBroadcast();
     }
     return 0;
