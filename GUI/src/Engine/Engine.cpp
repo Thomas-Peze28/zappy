@@ -109,14 +109,14 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
             _music.play();
     }
 
-    if (Zappy::Input::isKeyPressed(KEY_UP))
+    if (Zappy::Input::isKeyPressed(KEY_O))
     {
         int newTime = game.getTimeUnit() + 10;
         
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
 
-    if (Zappy::Input::isKeyPressed(KEY_DOWN))
+    if (Zappy::Input::isKeyPressed(KEY_I))
     {
         int newTime = game.getTimeUnit() - 10;
         
