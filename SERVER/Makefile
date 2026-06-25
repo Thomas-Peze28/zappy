@@ -1,47 +1,58 @@
 ##
 ## EPITECH PROJECT, 2026
-## Server Makefile
-## File description:
 ## Zappy
+## File description:
+## Makefile
 ##
-
-RED=\033[0;31m
-GREEN=\033[0;32m
-YELLOW=\033[0;33m
-BLUE=\033[0;34m
-MAGENTA=\033[0;35m
-CYAN=\033[0;36m
-RESET=\033[0m
-
-SRC_SERVER     =   src/main.c \
-
-C     =   epiclang
-
-OBJ     =   $(SRC_SERVER:.c=.o)
 
 NAME    =   zappy_server
 
-CFLAGS = -Wextra -Wall -I ./include/ -lm -std=gnu17
+CC      =   epiclang
+CFLAGS  =   -Wall -Wextra -Werror
+IFLAGS  =   -I include
 
-LDLIBS   = -lm
+SRC     =   src/main.c                      \
+            src/network/arg_parser.c        \
+            src/network/teams_parser.c      \
+            src/network/parser.c  \
+            src/network/flags_parser.c   \
+			src/network/connection.c              \
+			src/server/server.c                    \
+			src/server/server_utils.c                     \
+			src/server/server_event.c               \
+			src/server/client.c                    \
+			src/buffer.c					\
+			src/map/map_create.c                 \
+			src/map/map_destroy.c                \
+			src/map/map_generate.c                  \
+			src/command/command_exec.c                 \
+			src/command/cmd_fork.c                 \
+			src/command/cmd_forward.c                 \
+			src/command/cmd_right_left.c             \
+			src/command/cmd_inventory.c                 \
+			src/command/cmd_take_set.c                 \
+			src/command/cmd_broadcast.c                 \
+			src/command/cmd_look.c                 \
+			src/command/cmd_incantation.c                 \
+			src/command/command_queue.c			\
+			src/timer/timer.c	 
 
-.SILENT:
+OBJ     =   $(SRC:.c=.o)
 
-all:    $(NAME)
+all: $(NAME)
 
-$(NAME):    $(OBJ)
-	$(C) -o $(NAME) $(OBJ) $(CFLAGS) $(LDLIBS)
-	@printf "$(GREEN)[OK]$(RESET) Binary $(CYAN)'$(NAME)'$(RESET) compiled successfully.\n"
+$(NAME): $(OBJ)
+	$(CC) $(CFLAGS) $(IFLAGS) -o $(NAME) $(OBJ)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(IFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJ)
-	@printf "$(YELLOW)[INFO]$(RESET) Server object files removed.\n"
 
 fclean: clean
 	rm -f $(NAME)
-	@printf "$(YELLOW)[INFO]$(RESET) Server binary $(CYAN)'$(NAME)'$(RESET) removed.\n"
 
-re:     fclean all
-		@printf "$(BLUE)[INFO]$(RESET) Server rebuilt successfully.\n"
+re: fclean all
 
-.PHONY: all clean fclean re tests_run clean_tests
+.PHONY: all clean fclean re
