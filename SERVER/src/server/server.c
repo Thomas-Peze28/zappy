@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "command.h"
+#include "gui.h"
 
 static int setup_socket(int port)
 {
@@ -44,6 +45,7 @@ int create_server(server_t *server)
     spawn_resources(server->map, 1);
     server->fd = fd;
     server->client_count = 0;
+    server->next_client_id = 1;
     server->polls[0].fd = fd;
     server->polls[0].events = POLLIN;
     return 0;
