@@ -8,19 +8,45 @@
 #include "Engine.hpp"
 
 /**
+* Resolves the absolute path for a given asset file.
+* @param relativePath The relative path to the asset file.
+* @return The absolute path to the asset file.
+**/
+std::string Zappy::Engine::resolveAssetPath(const std::string &relativePath)
+{
+    std::error_code errorCode;
+    const std::filesystem::path executablePath = std::filesystem::read_symlink("/proc/self/exe", errorCode);
+    const std::filesystem::path executableDir = errorCode ? std::filesystem::current_path() : executablePath.parent_path();
+
+    const std::filesystem::path possiblePaths[] = {
+        executableDir / relativePath,
+        executableDir / "GUI" / relativePath,
+        std::filesystem::current_path() / relativePath,
+        std::filesystem::current_path() / "GUI" / relativePath,
+    };
+
+    for (const std::filesystem::path &candidate : possiblePaths) {
+        if (std::filesystem::exists(candidate))
+            return candidate.string();
+    }
+
+    return (executableDir / relativePath).string();
+}
+
+/**
 * Initializes the Engine with default parameters.
 **/
 Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 {
-    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
-    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>("assets/object/Linemate.glb");
-    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>("assets/object/Deraumere.glb");
-    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>("assets/object/Sibur.glb");
-    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>("assets/object/Mendiane.glb");
-    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
-    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
-    _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
+    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Food.glb"));
+    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Linemate.glb"));
+    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Deraumere.glb"));
+    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Sibur.glb"));
+    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Mendiane.glb"));
+    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Phiras.glb"));
+    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Thystame.glb"));
+    _playerModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Generic_Male.glb"));
+    _eggModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Egg.glb"));
 }
 
 /**
@@ -33,26 +59,26 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     : _audioDevice(),
       _window(width, height, title, 60),
       _camera({15.0f, 15.0f, 15.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f),
-      _hexTile("assets/object/GrassTile.glb"),
-      _mainFont("assets/fonts/Roboto-Black.ttf"),
+            _hexTile(resolveAssetPath("assets/object/GrassTile.glb")),
+            _mainFont(resolveAssetPath("assets/fonts/Roboto-Black.ttf")),
       _title(_mainFont, "EPITECH - ZAPPY", {500.0f, 20.0f}, 40.0f, DARKBLUE),
-      _sprite("assets/sprites/epitech.png"),
-      _music("assets/audio/music.mp3"),
-      _sound("assets/audio/sound.mp3"),
+            _sprite(resolveAssetPath("assets/sprites/epitech.png")),
+            _music(resolveAssetPath("assets/audio/music.mp3")),
+            _sound(resolveAssetPath("assets/audio/sound.mp3")),
       _gap(0.3f)
 {
     _audioDevice.setMasterVolume(0.5f);
     _music.play();
 
-    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
-    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>("assets/object/Linemate.glb");
-    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>("assets/object/Deraumere.glb");
-    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>("assets/object/Sibur.glb");
-    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>("assets/object/Mendiane.glb");
-    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
-    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
-    _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
+        _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Food.glb"));
+        _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Linemate.glb"));
+        _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Deraumere.glb"));
+        _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Sibur.glb"));
+        _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Mendiane.glb"));
+        _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Phiras.glb"));
+        _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Thystame.glb"));
+        _playerModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Generic_Male.glb"));
+        _eggModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Egg.glb"));
 }
 
 /**
@@ -94,6 +120,7 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
     if (Zappy::Input::isKeyPressed(KEY_F))
     {
         _window.toggleFullscreen();
+        _hud.toggleOpen();
     }
 
     if (Zappy::Input::isKeyPressed(KEY_C))
@@ -109,14 +136,14 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
             _music.play();
     }
 
-    if (Zappy::Input::isKeyPressed(KEY_UP))
+    if (Zappy::Input::isKeyPressed(KEY_O))
     {
         int newTime = game.getTimeUnit() + 10;
         
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
 
-    if (Zappy::Input::isKeyPressed(KEY_DOWN))
+    if (Zappy::Input::isKeyPressed(KEY_I))
     {
         int newTime = game.getTimeUnit() - 10;
         
@@ -125,6 +152,11 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
         }
         
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
+    }
+
+    if (Zappy::Input::isKeyPressed(KEY_L))
+    {
+        _hud.toggleOpen();
     }
 
     return 0;
