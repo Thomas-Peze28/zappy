@@ -35,7 +35,16 @@ SRC     =   src/main.c                      \
 			src/command/cmd_look.c                 \
 			src/command/cmd_incantation.c                 \
 			src/command/command_queue.c			\
-			src/timer/timer.c	 
+			src/timer/timer.c	 \
+			src/gui/gui_handler.c \
+			src/gui/gui_parser.c \
+			src/gui/gui_utils.c \
+			src/gui/map.c \
+			src/gui/notify_action.c \
+			src/gui/notify_egg.c \
+			src/gui/notify_player.c \
+			src/gui/team.c \
+			src/gui/time.c
 
 OBJ     =   $(SRC:.c=.o)
 
