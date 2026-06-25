@@ -8,6 +8,9 @@
 #include "server_config.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "timer.h"
 
 int find_team(server_config_t *config, const char *name)
 {
@@ -60,11 +63,24 @@ static void send_ai_info(server_t *server, int idx, const char *team)
     send_to_client(&server->clients[idx], buf);
 }
 
+static void spawn_player(server_t *server, client_t *client)
+{
+    long long now = get_time_ms();
+
+    client->id = client->fd;
+    client->pos_x = rand() % server->config.width;
+    client->pos_y = rand() % server->config.height;
+    client->orientation = (rand() % 4) + 1;
+    client->level = 1;
+    client->inventory.food = 10;
+    client->death_time = now + (1260000 / server->config.freq);
+}
+
 static void handle_ai(server_t *server, int idx, const char *team)
 {
     server->clients[idx].type = CLIENT_AI;
-    strncpy(server->clients[idx].team_name, team,
-        TEAM_NAME_LEN - 1);
+    strncpy(server->clients[idx].team_name, team, TEAM_NAME_LEN - 1);
+    spawn_player(server, &server->clients[idx]);
     send_ai_info(server, idx, team);
 }
 

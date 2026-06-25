@@ -9,11 +9,8 @@
 
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
-
     try {
-        Zappy::Core core;
+        Zappy::Core core(argc, argv);
 
         return core.run();
     

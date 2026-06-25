@@ -13,14 +13,23 @@ MAGENTA=\033[0;35m
 CYAN=\033[0;36m
 RESET=\033[0m
 
+SRC_AI     =   src/zappy_ai.py \
+			src/main.py \
+			src/zappy_ai_manager.py \
+			src/zappy_agent.py \
+			src/zappy_broadcast.py \
+			src/zappy_connection.py \
+			src/zappy_state.py \
+			src/__init__.py \
+
 NAME    =   zappy_ai
 
 .SILENT:
 
 all:    $(NAME)
 
-$(NAME):    $(OBJ)
-	cp src/main.py $(NAME)
+$(NAME):    $(SRC_AI)
+	cp src/zappy_ai.py $(NAME)
 	chmod +x $(NAME)
 	@printf "$(GREEN)[OK]$(RESET) Binary $(CYAN)'$(NAME)'$(RESET) compiled successfully.\n"
 

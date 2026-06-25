@@ -11,14 +11,61 @@ YELLOW=\033[0;33m
 BLUE=\033[0;34m
 MAGENTA=\033[0;35m
 CYAN=\033[0;36m
+BOLD=\033[1m
 RESET=\033[0m
 
+SRC_GRAPHICS =  src/Graphics/Camera/Camera.cpp \
+				src/Graphics/Window/Window.cpp \
+				src/Graphics/Model3D/Model3D.cpp \
+				src/Graphics/Font/Font.cpp \
+				src/Graphics/Text/Text.cpp \
+				src/Graphics/Input/Input.cpp \
+				src/Graphics/Sprite/Sprite.cpp \
+				src/Graphics/Audio/AudioDevice/AudioDevice.cpp \
+				src/Graphics/Audio/Sound/Sound.cpp \
+				src/Graphics/Audio/Music/Music.cpp \
+				src/Graphics/Shape3D/Shape3D.cpp \
+
+INCLUDE_GRAPHICS =   src/Graphics/Camera/Camera.hpp \
+					 src/Graphics/Window/Window.hpp \
+					 src/Graphics/Model3D/Model3D.hpp \
+					 src/Graphics/Font/Font.hpp \
+					 src/Graphics/Text/Text.hpp \
+					 src/Graphics/Input/Input.hpp \
+					 src/Graphics/Sprite/Sprite.hpp \
+					 src/Graphics/Audio/AudioDevice/AudioDevice.hpp \
+					 src/Graphics/Audio/Sound/Sound.hpp \
+					 src/Graphics/Audio/Music/Music.hpp \
+					 src/Graphics/Shape3D/Shape3D.hpp \
+
+SRC_GAME	=   src/Game/Game.cpp \
+				src/Game/Tile/Tile.cpp \
+				src/Game/Map/Map.cpp \
+				src/Game/Player/Player.cpp \
+				src/Game/Egg/Egg.cpp \
+				src/Game/HUD/Hud.cpp \
+
+INCLUDE_GAME =  src/Game/Game.hpp \
+				src/Game/Tile/Tile.hpp \
+				src/Game/Map/Map.hpp \
+				src/Game/Player/Player.hpp \
+				src/Game/Egg/Egg.hpp \
+				src/Game/HUD/Hud.hpp \
+
 SRC_GUI     =   src/main.cpp \
-			src/Core/Core.cpp \
+				src/Core/Core.cpp \
+				src/Core/Command.cpp \
+				$(SRC_GRAPHICS) \
+				$(SRC_GAME) \
+				src/Engine/Engine.cpp \
+				src/Network/Network.cpp \
 			
 INCLUDE_GUI =  	src/Core/Core.hpp \
-			src/Include/RTCError.hpp \
-			
+				src/Include/RTCError.hpp \
+				$(INCLUDE_GRAPHICS) \
+				$(INCLUDE_GAME) \
+				src/Engine/Engine.hpp \
+				src/Network/Network.hpp \
 
 CXX     =   g++
 
@@ -28,7 +75,7 @@ NAME    =   zappy_gui
 
 CXXFLAGS = -Wextra -Wall $(addprefix -I, $(sort $(dir $(INCLUDE_GUI)))) -std=c++20
 
-LDLIBS   = -lm -lsfml-graphics -lsfml-window -lsfml-system
+LDLIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 .SILENT:
 
@@ -49,4 +96,26 @@ fclean: clean
 re:     fclean all
 		@printf "$(BLUE)[INFO]$(RESET) GUI rebuilt successfully.\n"
 
-.PHONY: all clean fclean re tests_run clean_tests
+test_gui:
+	${MAKE} --no-print-directory -C ./
+	@set -e; \
+	trap 'kill $$ai_pid $$server_pid 2>/dev/null || true' EXIT; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
+	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
+	./test/zappy_test_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
+	sleep 1; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
+	$(MAKE) --no-print-directory -C ../AI; \
+	../AI/zappy_ai -p 5252 -n Team1 >test/zappy_ai.log 2>&1 & ai_pid=$$!; \
+	sleep 1; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI binary...\n"; \
+	./zappy_gui -h localhost -p 5252
+	${MAKE} --no-print-directory -C ../AI fclean
+	${MAKE} --no-print-directory -C ./ fclean
+
+clean_tests:
+	${MAKE} --no-print-directory -C ../AI fclean
+	${MAKE} --no-print-directory -C ./ fclean
+	rm -f test/zappy_test_server.log test/zappy_ai.log
+
+.PHONY: all clean fclean re test_gui clean_tests

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "server_config.h"
+#include <time.h>
 
 void free_config(server_config_t *config)
 {
@@ -42,5 +43,6 @@ int run(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    srand(time(NULL));
     return run(argc, argv);
 }

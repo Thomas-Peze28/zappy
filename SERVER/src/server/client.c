@@ -14,16 +14,12 @@ static const char WELCOME[] = "WELCOME\n";
 
 void init_client(client_t *client)
 {
+    memset(client, 0, sizeof(client_t));
     client->fd = -1;
-    client->read_len = 0;
-    client->write_len = 0;
     client->type = CLIENT_UNKNOWN;
-    client->is_connected = 0;
-    client->pending_disconnect = 0;
-    memset(client->read_buf, 0, BUFFER_SIZE);
-    memset(client->write_buf, 0, BUFFER_SIZE);
-    memset(client->line_buf, 0, BUFFER_SIZE);
-    memset(client->team_name, 0, TEAM_NAME_LEN);
+    client->id = -1;
+    client->orientation = NORTH;
+    client->level = 1;
 }
 
 static void send_welcome(client_t *client)

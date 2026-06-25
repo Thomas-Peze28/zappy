@@ -7,7 +7,7 @@
 
 NAME    =   zappy_server
 
-CC      =   gcc
+CC      =   epiclang
 CFLAGS  =   -Wall -Wextra -Werror
 IFLAGS  =   -I include
 
@@ -17,10 +17,25 @@ SRC     =   src/main.c                      \
             src/network/parser.c  \
             src/network/flags_parser.c   \
 			src/network/connection.c              \
-			src/server.c                    \
-			src/client.c                    \
-			src/buffer.c
-
+			src/server/server.c                    \
+			src/server/server_utils.c                     \
+			src/server/server_event.c               \
+			src/server/client.c                    \
+			src/buffer.c					\
+			src/map/map_create.c                 \
+			src/map/map_destroy.c                \
+			src/map/map_generate.c                  \
+			src/command/command_exec.c                 \
+			src/command/cmd_fork.c                 \
+			src/command/cmd_forward.c                 \
+			src/command/cmd_right_left.c             \
+			src/command/cmd_inventory.c                 \
+			src/command/cmd_take_set.c                 \
+			src/command/cmd_broadcast.c                 \
+			src/command/cmd_look.c                 \
+			src/command/cmd_incantation.c                 \
+			src/command/command_queue.c			\
+			src/timer/timer.c	 
 
 OBJ     =   $(SRC:.c=.o)
 
