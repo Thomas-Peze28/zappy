@@ -1,5 +1,6 @@
 import math
 import time
+import os
 from collections import deque
 
 from .zappy_broadcast import ZappyBroadcastCoordinator
@@ -20,11 +21,11 @@ class ZappyAI:
     FORK_COOLDOWN = 30.0
     CONNECT_NBR_COOLDOWN = 10.0
 
-    def __init__(self, manager, sock, team_name, initial_slots, map_x, map_y):
+    def __init__(self, manager, sock, team_name, remaining_slots, map_x, map_y):
         self.manager = manager
         self.sock = sock
         self.team_name = team_name
-        self.initial_slots = initial_slots
+        self.remaining_slots = remaining_slots
         self.map_x = map_x
         self.map_y = map_y
         self.read_buffer = ""
@@ -39,7 +40,11 @@ class ZappyAI:
         self.food_threshold = 15
         self.last_fork_time = 0.0
         self.last_connect_nbr_time = time.time()
-        self.broadcast = ZappyBroadcastCoordinator(team_name, self.sock.fileno())
+        self.drone_id = f"{os.getpid()}-{self.sock.fileno()}-{int(time.time() * 1000)}"
+        self.broadcast = ZappyBroadcastCoordinator(team_name, self.drone_id)
+        self.known_drones = {}
+        self.last_inventory_broadcast = 0.0
+        self.INVENTORY_BROADCAST_COOLDOWN = 8.0
 
     def queue_command(self, command):
         self.command_queue.append(command)
@@ -52,31 +57,30 @@ class ZappyAI:
                 self.sock.sendall((cmd + "\n").encode("utf-8"))
                 self.sent_commands.append(cmd)
             except Exception:
-                self.manager.remove_client(self.sock.fileno())
+                self.manager.disconnect()
                 return
 
     def receive_data(self):
         try:
             data = self.sock.recv(4096)
             if not data:
-                self.manager.remove_client(self.sock.fileno())
+                self.manager.disconnect()
                 return
             self.read_buffer += data.decode("utf-8")
             self._process_buffer()
         except BlockingIOError:
             pass
         except Exception:
-            self.manager.remove_client(self.sock.fileno())
+            self.manager.disconnect()
 
     def _process_buffer(self):
         while "\n" in self.read_buffer:
             line, self.read_buffer = self.read_buffer.split("\n", 1)
             line = line.strip()
-            fd = self.sock.fileno()
 
             if line == "dead":
-                print(f"[*] [FD {fd}] Le drone est mort de faim.")
-                self.manager.remove_client(fd)
+                print("[*] Le drone est mort de faim.")
+                self.manager.disconnect()
                 return
 
             if line.startswith("message"):
@@ -94,7 +98,7 @@ class ZappyAI:
             if line.startswith("Current level:"):
                 try:
                     self.level = int(line.split(":")[1].strip())
-                    print(f"[IA - FD {fd}] Niveau {self.level} atteint !")
+                    print(f"[IA] Niveau {self.level} atteint !")
                     self.state = DroneState.SEARCH_FOOD
                     self.inventory_fresh = False
                     self.vision_fresh = False
@@ -109,8 +113,6 @@ class ZappyAI:
             self._flush_commands()
 
     def _handle_response(self, command, response):
-        fd = self.sock.fileno()
-
         if command == "Inventory":
             clean_text = response.strip("[]")
             parsed = {}
@@ -123,6 +125,7 @@ class ZappyAI:
                         pass
             self.inventory = parsed
             self.inventory_fresh = True
+            self._broadcast_inventory()
             return
 
         if command == "Look":
@@ -133,17 +136,17 @@ class ZappyAI:
 
         if command == "Incantation":
             if response == "Elevation underway":
-                print(f"[IA - FD {fd}] Rituel en cours, je me fige.")
+                print("[IA] Rituel en cours, je me fige.")
                 self.command_queue.clear()
             elif response == "ko":
-                print(f"[IA - FD {fd}] Echec incantation (ko). Reset.")
+                print("[IA] Échec incantation (ko). Reset.")
                 self.inventory_fresh = False
                 self.vision_fresh = False
                 self.state = DroneState.SEARCH_FOOD
             return
 
         if command == "Fork" and response == "ok":
-            print(f"[IA - FD {fd}] Oeuf pondu ! Demande des slots disponibles...")
+            print("[IA] Œuf pondu ! Demande des slots disponibles...")
             self.queue_command("Connect_nbr")
             return
 
@@ -151,9 +154,7 @@ class ZappyAI:
             try:
                 available_slots = int(response)
                 if available_slots > 0:
-                    print(f"[IA - FD {fd}] {available_slots} slot(s) disponible(s). Éclosion en cours...")
-                    for _ in range(available_slots):
-                        self.manager.spawn_client()
+                    print(f"[IA] {available_slots} slot(s) disponible(s) sur le serveur. Prêt pour un nouveau drone !")
             except ValueError:
                 pass
             return
@@ -164,14 +165,39 @@ class ZappyAI:
 
         if command.startswith("Set") and response == "ko":
             resource = command.split(" ", 1)[-1]
-            print(f"[IA - FD {fd}] Impossible de deposer '{resource}' (ko).")
+            print(f"[IA] Impossible de déposer '{resource}' (ko).")
+
+    def _handle_inventory_broadcast(self, frame):
+        drone_id = frame.get("leader_id")
+        payload = frame.get("payload", {})
+        inventory = payload.get("inventory", {})
+
+        if not drone_id or drone_id == self.drone_id:
+            return
+
+        self.known_drones[drone_id] = {
+            "level": frame.get("level", 0),
+            "inventory": inventory,
+            "last_seen": time.time(),
+        }
+
+        print(
+            f"[IA] Info inventaire reçue de {drone_id}: "
+            f"lvl={frame.get('level', 0)} inv={inventory}"
+        )
 
     def _handle_broadcast(self, k, text):
         frame = self.broadcast.parse_incoming(text)
         if not frame:
             return
 
-        if frame.get("kind") != "elevation-request":
+        kind = frame.get("kind")
+
+        if kind == "inventory-status":
+            self._handle_inventory_broadcast(frame)
+            return
+
+        if kind != "elevation-request":
             return
 
         target_level = frame.get("level", 0)
@@ -189,10 +215,47 @@ class ZappyAI:
         self.state = DroneState.JOIN_ELEVATION
 
         if k == 0:
-            print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Arrive sur la case du leader.")
+            print("[IA] FOLLOWER : Arrivé sur la case du leader.")
         else:
-            print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Je rejoins le broadcast direction {k}.")
+            print(f"[IA] FOLLOWER : Je rejoins le broadcast direction {k}.")
             self._move_to_sound(k)
+
+    def _team_elevation(self):
+        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+        if not req:
+            return False
+
+        now = time.time()
+        same_level_helpers = 1
+        total_stones = {
+            stone: self.inventory.get(stone, 0)
+            for stone in self.STONES
+        }
+
+        for drone in self.known_drones.values():
+            if now - drone.get("last_seen", 0) > 20:
+                continue
+
+            if drone.get("level") != self.level:
+                continue
+
+            inv = drone.get("inventory", {})
+            if inv.get("food", 0) <= 10:
+                continue
+
+            same_level_helpers += 1
+
+            for stone in self.STONES:
+                total_stones[stone] += inv.get(stone, 0)
+
+        if same_level_helpers < req[0]:
+            return False
+
+        for i, stone in enumerate(self.STONES):
+            if total_stones[stone] < req[i + 1]:
+                return False
+
+        return True
 
     def _move_to_sound(self, k):
         if k == 1:
@@ -274,6 +337,31 @@ class ZappyAI:
             self.inventory.get(stone, 0) >= req[i + 1]
             for i, stone in enumerate(self.STONES)
         )
+    
+    def _broadcast_inventory(self):
+        now = time.time()
+
+        if now - self.last_inventory_broadcast < self.INVENTORY_BROADCAST_COOLDOWN:
+            return
+
+        if self.inventory.get("food", 0) <= 10:
+            return
+
+        packet = self.broadcast.build_inventory_packet(
+            self.level,
+            {
+                "food": self.inventory.get("food", 0),
+                "linemate": self.inventory.get("linemate", 0),
+                "deraumere": self.inventory.get("deraumere", 0),
+                "sibur": self.inventory.get("sibur", 0),
+                "mendiane": self.inventory.get("mendiane", 0),
+                "phiras": self.inventory.get("phiras", 0),
+                "thystame": self.inventory.get("thystame", 0),
+            }
+        )
+
+        self.queue_command(f"Broadcast {packet}")
+        self.last_inventory_broadcast = now
 
     def think(self):
         if self.command_queue or self.sent_commands:
@@ -300,7 +388,7 @@ class ZappyAI:
             self.state = DroneState.SEARCH_FOOD
         elif self.state == DroneState.JOIN_ELEVATION:
             pass
-        elif self._is_ready_for_elevation():
+        elif self._is_ready_for_elevation() or self._team_elevation():
             self.state = DroneState.ELEVATE
         elif current_food > 35 and self.level < 8 and (time.time() - self.last_fork_time) > self.FORK_COOLDOWN:
             self.state = DroneState.FORK
@@ -351,6 +439,7 @@ class ZappyAI:
                         "required": req[0],
                         "food": self.inventory.get("food", 0),
                         "missing": self._missing_stones(),
+                        "leader_inventory": self.inventory,
                     }
                     self.queue_command(
                         f"Broadcast {self.broadcast.build_elevation_packet(self.level + 1, payload)}"
