@@ -45,8 +45,7 @@ typedef enum client_type_e {
     CLIENT_GUI
 } client_type_t;
 
-typedef struct command_s
-{
+typedef struct command_s {
     char command[MAX_COMMAND_LEN];
     long long execute_at;
 } command_t;
@@ -96,6 +95,7 @@ typedef struct server_s {
     client_t clients[MAX_CLIENTS];
     struct pollfd polls[MAX_CLIENTS + 1];
     int client_count;
+    int next_client_id;
     map_t *map;
     egg_t eggs[1024];
     int egg_count;
