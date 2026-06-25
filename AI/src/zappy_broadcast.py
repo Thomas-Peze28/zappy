@@ -1,89 +1,79 @@
-import base64
-import hashlib
-import hmac
-import json
 import time
 
 
 class ZappyBroadcastCoordinator:
     def __init__(self, team_name, leader_id):
-        self.team_name = team_name
+        self.team_name = str(team_name)
         self.leader_id = str(leader_id)
-        
-        self.secret_key = hashlib.sha256(f"{team_name}:broadcast:v1".encode()).digest()
-        
-        phase_hash = hashlib.sha256(f"phase:{self.leader_id}".encode()).digest()
-        self.announce_phase = (int.from_bytes(phase_hash[:4], "big") / 0xFFFFFFFF) * 0.9
-        
+
         self.last_announce = 0.0
         self.active_session = None
         self.last_seen_session = 0.0
 
-    def _get_keystream(self, length, nonce):
-        stream = bytearray()
-        counter = 0
-        while len(stream) < length:
-            block = hashlib.sha256(self.secret_key + nonce + counter.to_bytes(4, "big")).digest()
-            stream.extend(block)
-            counter += 1
-        return bytes(stream[:length])
-
-    def _crypt(self, data, nonce):
-        keystream = self._get_keystream(len(data), nonce)
-        return bytes(b1 ^ b2 for b1, b2 in zip(data, keystream))
-
-    def _sign(self, text):
-        return hmac.new(self.secret_key, text.encode(), hashlib.sha256).hexdigest()
-
     def can_announce(self, interval=1.4):
         now = time.time()
-        if now - self.last_announce < (interval + self.announce_phase):
+        if now - self.last_announce < interval:
             return False
         self.last_announce = now
         return True
 
-    def build_elevation_packet(self, level, payload=None):
-        nonce = hashlib.sha256(f"{self.leader_id}:{level}:{time.time_ns()}".encode()).digest()[:16]
+    def _escape(self, value):
+        return str(value).replace(";", "_").replace("=", "_").replace("\n", "_")
+
+    def _build_packet(self, kind, level, fields=None):
         bucket = int(time.time() // 4)
-        
-        frame = {
-            "v": 1,
+        session = f"{self.team_name}:{kind}:{level}:{self.leader_id}:{bucket}"
+
+        data = {
             "team": self.team_name,
-            "kind": "elevation-request",
+            "kind": kind,
             "level": level,
             "leader": self.leader_id,
-            "session": f"{self.team_name}:{level}:{self.leader_id}:{bucket}",
-            "payload": payload or {}
+            "session": session,
         }
-        
-        raw_json = json.dumps(frame, separators=(",", ":"), sort_keys=True).encode()
-        cipher = self._crypt(raw_json, nonce)
-        encoded = base64.urlsafe_b64encode(nonce + cipher).decode()
-        
-        return f"BC1|{encoded}|{self._sign(encoded)}"
-    
+
+        if fields:
+            data.update(fields)
+
+        parts = ["BC1"]
+        for key, value in data.items():
+            parts.append(f"{key}={self._escape(value)}")
+
+        return ";".join(parts)
+
     def build_inventory_packet(self, level, inventory):
-        nonce = hashlib.sha256(f"{self.leader_id}:inventory:{time.time_ns()}".encode()).digest()[:16]
-        bucket = int(time.time() // 4)
+        return self._build_packet(
+            "inventory-status",
+            level,
+            {
+                "food": inventory.get("food", 0),
+                "linemate": inventory.get("linemate", 0),
+                "deraumere": inventory.get("deraumere", 0),
+                "sibur": inventory.get("sibur", 0),
+                "mendiane": inventory.get("mendiane", 0),
+                "phiras": inventory.get("phiras", 0),
+                "thystame": inventory.get("thystame", 0),
+            },
+        )
 
-        frame = {
-            "v": 1,
-            "team": self.team_name,
-            "kind": "inventory-status",
-            "level": level,
-            "leader": self.leader_id,
-            "session": f"{self.team_name}:inventory:{self.leader_id}:{bucket}",
-            "payload": {
-                "inventory": inventory,
-                "time": time.time(),
-            }
+    def build_elevation_packet(self, level, payload=None):
+        payload = payload or {}
+
+        fields = {
+            "players": payload.get("players", 0),
+            "required": payload.get("required", 0),
+            "food": payload.get("food", 0),
         }
 
-        raw_json = json.dumps(frame, separators=(",", ":"), sort_keys=True).encode()
-        cipher = self._crypt(raw_json, nonce)
-        encoded = base64.urlsafe_b64encode(nonce + cipher).decode()
+        missing = payload.get("missing", {})
+        for stone, amount in missing.items():
+            fields[f"missing_{stone}"] = amount
 
-        return f"BC1|{encoded}|{self._sign(encoded)}"
+        leader_inventory = payload.get("leader_inventory", {})
+        for stone, amount in leader_inventory.items():
+            fields[f"inv_{stone}"] = amount
+
+        return self._build_packet("elevation-request", level, fields)
 
     def parse_incoming(self, raw_message):
         direction = 0
@@ -97,56 +87,69 @@ class ZappyBroadcastCoordinator:
             except (IndexError, ValueError):
                 return None
 
-        if text.startswith("BC1|"):
-            parts = text.split("|")
-            if len(parts) != 3:
-                return None
-            
-            _, encoded, signature = parts
-            if not hmac.compare_digest(self._sign(encoded), signature):
+        if not text.startswith("BC1;"):
+            return None
+
+        try:
+            data = {}
+
+            for part in text.split(";")[1:]:
+                if "=" not in part:
+                    continue
+                key, value = part.split("=", 1)
+                data[key] = value
+
+            if data.get("team") != self.team_name:
                 return None
 
-            try:
-                blob = base64.urlsafe_b64decode(encoded.encode())
-                if len(blob) <= 16:
-                    return None
-                
-                nonce, cipher = blob[:16], blob[16:]
-                decrypted = self._crypt(cipher, nonce)
-                frame = json.loads(decrypted.decode())
-                
-                if frame.get("team") != self.team_name:
-                    return None
-                
-                return {
-                    "kind": frame.get("kind"),
-                    "level": int(frame.get("level", 0)),
-                    "direction": direction,
-                    "leader_id": str(frame.get("leader")),
-                    "session_id": str(frame.get("session")),
-                    "payload": frame.get("payload", {}),
-                    "legacy": False
+            kind = data.get("kind")
+            level = int(data.get("level", 0))
+
+            payload = {}
+
+            if kind == "inventory-status":
+                payload["inventory"] = {
+                    "food": int(data.get("food", 0)),
+                    "linemate": int(data.get("linemate", 0)),
+                    "deraumere": int(data.get("deraumere", 0)),
+                    "sibur": int(data.get("sibur", 0)),
+                    "mendiane": int(data.get("mendiane", 0)),
+                    "phiras": int(data.get("phiras", 0)),
+                    "thystame": int(data.get("thystame", 0)),
                 }
-            except Exception:
-                return None
 
-        legacy_prefix = f"{self.team_name}_ELEVATE_"
-        if text.startswith(legacy_prefix):
-            try:
-                level = int(text.replace(legacy_prefix, "", 1))
-                return {
-                    "kind": "elevation-request",
-                    "level": level,
-                    "direction": direction,
-                    "leader_id": "legacy",
-                    "session_id": f"legacy:{self.team_name}:{level}",
-                    "payload": {},
-                    "legacy": True
-                }
-            except ValueError:
-                return None
+            elif kind == "elevation-request":
+                payload["players"] = int(data.get("players", 0))
+                payload["required"] = int(data.get("required", 0))
+                payload["food"] = int(data.get("food", 0))
 
-        return None
+                missing = {}
+                for key, value in data.items():
+                    if key.startswith("missing_"):
+                        stone = key.replace("missing_", "", 1)
+                        missing[stone] = int(value)
+                payload["missing"] = missing
+
+                leader_inventory = {}
+                for key, value in data.items():
+                    if key.startswith("inv_"):
+                        stone = key.replace("inv_", "", 1)
+                        leader_inventory[stone] = int(value)
+                payload["leader_inventory"] = leader_inventory
+
+            return {
+                "kind": kind,
+                "level": level,
+                "direction": direction,
+                "leader_id": data.get("leader"),
+                "session_id": data.get("session"),
+                "payload": payload,
+                "legacy": False,
+            }
+
+        except Exception as e:
+            print(f"[BROADCAST] parse error: {e} | raw={text}")
+            return None
 
     def should_follow(self, frame, lock_ttl=6.0):
         if not frame or frame.get("kind") != "elevation-request":
