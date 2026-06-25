@@ -116,3 +116,17 @@ int Zappy::Camera::getMode() const
 {
     return _mode;
 }
+
+/**
+* Gets the camera instance.
+* @return The camera instance.
+**/
+Camera3D Zappy::Camera::getCamera() const
+{
+    return _camera;
+}
+
+Ray Zappy::Camera::getMouseRay(Vector2 mousePosition) const
+{
+    return ::GetScreenToWorldRay(mousePosition, _camera);
+}
