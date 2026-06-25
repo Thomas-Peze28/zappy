@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "timer.h"
+#include "gui.h"
 
 int find_team(server_config_t *config, const char *name)
 {
@@ -67,7 +68,8 @@ static void spawn_player(server_t *server, client_t *client)
 {
     long long now = get_time_ms();
 
-    client->id = client->fd;
+    client->id = server->next_client_id;
+    server->next_client_id += 1;
     client->pos_x = rand() % server->config.width;
     client->pos_y = rand() % server->config.height;
     client->orientation = (rand() % 4) + 1;
@@ -82,6 +84,7 @@ static void handle_ai(server_t *server, int idx, const char *team)
     strncpy(server->clients[idx].team_name, team, TEAM_NAME_LEN - 1);
     spawn_player(server, &server->clients[idx]);
     send_ai_info(server, idx, team);
+    gui_notify_pnw(server, &server->clients[idx]);
 }
 
 void handle_connection(server_t *server, int idx)

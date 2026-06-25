@@ -10,6 +10,7 @@
 #include <string.h>
 #include "command.h"
 #include "timer.h"
+#include "gui.h"
 
 static long long get_command_time(server_t *server, const char *cmd)
 {
@@ -39,6 +40,10 @@ void handle_client_read(server_t *server, int i)
     }
     if (client->type == CLIENT_UNKNOWN) {
         handle_connection(server, i);
+        return;
+    }
+    if (client->type == CLIENT_GUI) {
+        handle_gui_command(server, i);
         return;
     }
     line = buffer_get_line(client);
