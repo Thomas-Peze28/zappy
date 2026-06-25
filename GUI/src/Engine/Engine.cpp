@@ -66,8 +66,8 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
             _music(resolveAssetPath("assets/audio/music.mp3")),
             _sound(resolveAssetPath("assets/audio/sound.mp3")),
       _gap(0.3f),
-      _selectedX(0),
-      _selectedY(0)
+      _selectedX(-1),
+      _selectedY(-1)
 {
     _audioDevice.setMasterVolume(0.5f);
     _music.play();
