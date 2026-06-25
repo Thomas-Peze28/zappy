@@ -11,6 +11,10 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <iostream>
+
+#include "Tile.hpp"
+#include "Shape3D.hpp"
 
 namespace Zappy
 {
@@ -25,6 +29,7 @@ namespace Zappy
             bool isOpen() const;
             void toggleOpen();
             void setOpening(bool open);
+            void drawTileInventory(int x, int y, const class Tile &tile) const;
 
 
             // TODO: essayer de fix le toggle bar au moment du passage en fullscreen

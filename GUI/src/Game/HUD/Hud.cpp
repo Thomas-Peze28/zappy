@@ -116,6 +116,44 @@ void Zappy::Hud::setOpening(bool open)
 	_open = open;
 }
 
+/**
+* @brief Draws the inventory for a specific tile.
+* @param x The x-coordinate of the tile.
+* @param y The y-coordinate of the tile.
+* @param tile The tile instance.
+**/
+void Zappy::Hud::drawTileInventory(int x, int y, const Zappy::Tile &tile) const
+{
+    int panelWidth = 250;
+    int panelHeight = 350;
+    int startX = 10;
+    int startY = 40;
+
+    Zappy::Shape3D::drawRectangle(startX, startY, panelWidth, panelHeight, Fade(BLACK, 0.7f));
+    Zappy::Shape3D::drawRectangleLines(startX, startY, panelWidth, panelHeight, WHITE);
+
+    std::string title = "=== TILE [" + std::to_string(x) + ", " + std::to_string(y) + "] ===";
+    DrawText(title.c_str(), startX + 20, startY + 20, 20, RAYWHITE);
+
+    int textY = startY + 70;
+    int fontSize = 20;
+    int spacing = 35;
+
+    auto drawResourceInfo = [&](const std::string& name, Zappy::RESSOURCE res, Color color) {
+        std::string line = name + " : " + std::to_string(tile.getResource(res));
+        DrawText(line.c_str(), startX + 20, textY, fontSize, color);
+        textY += spacing;
+    };
+
+    drawResourceInfo("Food", Zappy::RESSOURCE::FOOD, ORANGE);
+    drawResourceInfo("Linemate", Zappy::RESSOURCE::LINEMATE, PURPLE);
+    drawResourceInfo("Deraumere", Zappy::RESSOURCE::DERAUMERE, BLUE);
+    drawResourceInfo("Sibur", Zappy::RESSOURCE::SIBUR, GREEN);
+    drawResourceInfo("Mendiane", Zappy::RESSOURCE::MENDIANE, RED);
+    drawResourceInfo("Phiras", Zappy::RESSOURCE::PHIRAS, GOLD);
+    drawResourceInfo("Thystame", Zappy::RESSOURCE::THYSTAME, SKYBLUE);
+}
+
 // TODO: essayer de fix le toggle bar au moment du passage en fullscreen
 
 // void Zappy::Hud::setPanelWidth(float width)
