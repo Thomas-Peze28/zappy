@@ -76,7 +76,7 @@ void Zappy::Hud::draw() const
 	if (!_messages.empty() && _currentX < GetScreenWidth()) {
 		float textX = _currentX + 16.0f;
 		float textY = 16.0f;
-		int fontSize = 20;
+		int fontSize = 15;
 		for (const auto &message : _messages) {
 			DrawText(message.c_str(), (int)textX, (int)textY, fontSize, WHITE);
 			textY += fontSize + 8;
