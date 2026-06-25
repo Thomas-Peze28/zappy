@@ -1,5 +1,6 @@
 import math
 import time
+import os
 from collections import deque
 
 from .zappy_broadcast import ZappyBroadcastCoordinator
@@ -39,7 +40,8 @@ class ZappyAI:
         self.food_threshold = 15
         self.last_fork_time = 0.0
         self.last_connect_nbr_time = time.time()
-        self.broadcast = ZappyBroadcastCoordinator(team_name, self.sock.fileno())
+        self.drone_id = f"{os.getpid()}-{self.sock.fileno()}-{int(time.time() * 1000)}"
+        self.broadcast = ZappyBroadcastCoordinator(team_name, self.drone_id)
         self.known_drones = {}
         self.last_inventory_broadcast = 0.0
         self.INVENTORY_BROADCAST_COOLDOWN = 8.0
@@ -170,7 +172,7 @@ class ZappyAI:
         payload = frame.get("payload", {})
         inventory = payload.get("inventory", {})
 
-        if not drone_id or drone_id == str(self.sock.fileno()):
+        if not drone_id or drone_id == self.drone_id:
             return
 
         self.known_drones[drone_id] = {
