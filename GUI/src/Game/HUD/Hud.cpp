@@ -73,7 +73,7 @@ void Zappy::Hud::draw() const
 	if (!_messages.empty() && _currentX < GetScreenWidth()) {
 		float textX = _currentX + 16.0f;
 		float textY = 16.0f;
-		int fontSize = 18;
+		int fontSize = 20;
 		for (const auto &message : _messages) {
 			DrawText(message.c_str(), (int)textX, (int)textY, fontSize, WHITE);
 			textY += fontSize + 8;
@@ -87,25 +87,3 @@ bool Zappy::Hud::isOpen() const
 {
 	return _open;
 }
-
-// TODO: essayer de fix le toggle bar au moment du passage en fullscreen
-
-// void Zappy::Hud::setPanelWidth(float width)
-// {
-//     _panelWidth = width;
-// }
-
-// void Zappy::Hud::setButtonRectX(const Rectangle &rect)
-// {
-//     _buttonRect.x = rect.x;
-// }
-
-// void Zappy::Hud::setCurrentX(const Rectangle &rect)
-// {
-//     _currentX = rect.x;
-// }
-
-// const Rectangle &Zappy::Hud::getButtonRect(void) const
-// {
-//     return _buttonRect;
-// }
