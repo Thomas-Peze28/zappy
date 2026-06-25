@@ -99,7 +99,9 @@ void Zappy::Engine::nextCameraMode()
 {
     if (_camera.getMode() == CAMERA_FREE)
         _camera.setMode(CAMERA_ORBITAL);
-    else
+    else if (_camera.getMode() == CAMERA_ORBITAL)
+        _camera.setMode(CAMERA_PERSPECTIVE);
+    else if (_camera.getMode() == CAMERA_PERSPECTIVE)
         _camera.setMode(CAMERA_FREE);
 }
 
@@ -394,11 +396,14 @@ void Zappy::Engine::render3D(const Zappy::Game &game)
 **/
 void Zappy::Engine::render2D(const Zappy::Game &game)
 {
+    int screenHeight = GetScreenHeight();
+    int screenWidth = GetScreenWidth();
+
     _title.draw();
-    _sprite.draw({10.0f, 50.0f, 0.0f}, 0.1f, WHITE);
+    _sprite.draw({10.0f, (float)screenHeight - 75.0f, 0.0f}, 0.1f, WHITE);
     _window.drawFPS(10, 10);
 
-    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {10.0f, 110.0f}, 20.0f, BLACK);
+    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {(float)screenWidth - 150.0f, (float)screenHeight - 40.0f}, 20.0f, BLACK);
     timeUnitText.draw();
 
     if (_selectedX != -1 && _selectedY != -1) {
