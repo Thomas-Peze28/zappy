@@ -61,6 +61,29 @@ class ZappyBroadcastCoordinator:
         encoded = base64.urlsafe_b64encode(nonce + cipher).decode()
         
         return f"BC1|{encoded}|{self._sign(encoded)}"
+    
+    def build_inventory_packet(self, level, inventory):
+        nonce = hashlib.sha256(f"{self.leader_id}:inventory:{time.time_ns()}".encode()).digest()[:16]
+        bucket = int(time.time() // 4)
+
+        frame = {
+            "v": 1,
+            "team": self.team_name,
+            "kind": "inventory-status",
+            "level": level,
+            "leader": self.leader_id,
+            "session": f"{self.team_name}:inventory:{self.leader_id}:{bucket}",
+            "payload": {
+                "inventory": inventory,
+                "time": time.time(),
+            }
+        }
+
+        raw_json = json.dumps(frame, separators=(",", ":"), sort_keys=True).encode()
+        cipher = self._crypt(raw_json, nonce)
+        encoded = base64.urlsafe_b64encode(nonce + cipher).decode()
+
+        return f"BC1|{encoded}|{self._sign(encoded)}"
 
     def parse_incoming(self, raw_message):
         direction = 0

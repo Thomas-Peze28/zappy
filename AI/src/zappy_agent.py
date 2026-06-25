@@ -40,6 +40,9 @@ class ZappyAI:
         self.last_fork_time = 0.0
         self.last_connect_nbr_time = time.time()
         self.broadcast = ZappyBroadcastCoordinator(team_name, self.sock.fileno())
+        self.known_drones = {}
+        self.last_inventory_broadcast = 0.0
+        self.INVENTORY_BROADCAST_COOLDOWN = 8.0
 
     def queue_command(self, command):
         self.command_queue.append(command)
@@ -123,6 +126,7 @@ class ZappyAI:
                         pass
             self.inventory = parsed
             self.inventory_fresh = True
+            self._broadcast_inventory()
             return
 
         if command == "Look":
@@ -166,12 +170,37 @@ class ZappyAI:
             resource = command.split(" ", 1)[-1]
             print(f"[IA - FD {fd}] Impossible de deposer '{resource}' (ko).")
 
+    def _handle_inventory_broadcast(self, frame):
+        drone_id = frame.get("leader_id")
+        payload = frame.get("payload", {})
+        inventory = payload.get("inventory", {})
+
+        if not drone_id or drone_id == str(self.sock.fileno()):
+            return
+
+        self.known_drones[drone_id] = {
+            "level": frame.get("level", 0),
+            "inventory": inventory,
+            "last_seen": time.time(),
+        }
+
+        print(
+            f"[IA - FD {self.sock.fileno()}] Info inventaire reçue de {drone_id}: "
+            f"lvl={frame.get('level', 0)} inv={inventory}"
+    )
+
     def _handle_broadcast(self, k, text):
         frame = self.broadcast.parse_incoming(text)
         if not frame:
             return
 
-        if frame.get("kind") != "elevation-request":
+        kind = frame.get("kind")
+
+        if kind == "inventory-status":
+            self._handle_inventory_broadcast(frame)
+            return
+
+        if kind != "elevation-request":
             return
 
         target_level = frame.get("level", 0)
@@ -193,6 +222,43 @@ class ZappyAI:
         else:
             print(f"[IA - FD {self.sock.fileno()}] FOLLOWER : Je rejoins le broadcast direction {k}.")
             self._move_to_sound(k)
+
+    def _team_elevation(self):
+        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+        if not req:
+            return False
+
+        now = time.time()
+        same_level_helpers = 1
+        total_stones = {
+            stone: self.inventory.get(stone, 0)
+            for stone in self.STONES
+        }
+
+        for drone in self.known_drones.values():
+            if now - drone.get("last_seen", 0) > 20:
+                continue
+
+            if drone.get("level") != self.level:
+                continue
+
+            inv = drone.get("inventory", {})
+            if inv.get("food", 0) <= 10:
+                continue
+
+            same_level_helpers += 1
+
+            for stone in self.STONES:
+                total_stones[stone] += inv.get(stone, 0)
+
+        if same_level_helpers < req[0]:
+            return False
+
+        for i, stone in enumerate(self.STONES):
+            if total_stones[stone] < req[i + 1]:
+                return False
+
+        return True
 
     def _move_to_sound(self, k):
         if k == 1:
@@ -274,6 +340,31 @@ class ZappyAI:
             self.inventory.get(stone, 0) >= req[i + 1]
             for i, stone in enumerate(self.STONES)
         )
+    
+    def _broadcast_inventory(self):
+        now = time.time()
+
+        if now - self.last_inventory_broadcast < self.INVENTORY_BROADCAST_COOLDOWN:
+            return
+
+        if self.inventory.get("food", 0) <= 10:
+            return
+
+        packet = self.broadcast.build_inventory_packet(
+            self.level,
+            {
+                "food": self.inventory.get("food", 0),
+                "linemate": self.inventory.get("linemate", 0),
+                "deraumere": self.inventory.get("deraumere", 0),
+                "sibur": self.inventory.get("sibur", 0),
+                "mendiane": self.inventory.get("mendiane", 0),
+                "phiras": self.inventory.get("phiras", 0),
+                "thystame": self.inventory.get("thystame", 0),
+            }
+        )
+
+        self.queue_command(f"Broadcast {packet}")
+        self.last_inventory_broadcast = now
 
     def think(self):
         if self.command_queue or self.sent_commands:
@@ -300,7 +391,7 @@ class ZappyAI:
             self.state = DroneState.SEARCH_FOOD
         elif self.state == DroneState.JOIN_ELEVATION:
             pass
-        elif self._is_ready_for_elevation():
+        elif self._is_ready_for_elevation() or self._team_elevation():
             self.state = DroneState.ELEVATE
         elif current_food > 35 and self.level < 8 and (time.time() - self.last_fork_time) > self.FORK_COOLDOWN:
             self.state = DroneState.FORK
@@ -351,6 +442,7 @@ class ZappyAI:
                         "required": req[0],
                         "food": self.inventory.get("food", 0),
                         "missing": self._missing_stones(),
+                        "leader_inventory": self.inventory,
                     }
                     self.queue_command(
                         f"Broadcast {self.broadcast.build_elevation_packet(self.level + 1, payload)}"
