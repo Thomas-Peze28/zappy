@@ -8,8 +8,9 @@
 #include "Hud.hpp"
 #include "Input.hpp"
 
-using Zappy::Input;
-
+/**
+* @brief Constructor for the Hud class.
+**/
 Zappy::Hud::Hud()
 {
 	_open = false;
@@ -21,10 +22,9 @@ Zappy::Hud::Hud()
 	_panelColor = { 0, 0, 0, 150 };
 }
 
-Zappy::Hud::~Hud()
-{
-}
-
+/**
+* @brief Updates the HUD.
+**/
 void Zappy::Hud::update()
 {
 	_panelWidth = (float)GetScreenWidth() / 4.0f;
@@ -33,11 +33,7 @@ void Zappy::Hud::update()
 	if (Input::isMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		if (mouse.x >= _buttonRect.x && mouse.x <= _buttonRect.x + _buttonRect.width
 			&& mouse.y >= _buttonRect.y && mouse.y <= _buttonRect.y + _buttonRect.height) {
-			_open = !_open;
-			if (_open)
-				_targetX = (float)GetScreenWidth() - _panelWidth;
-			else
-				_targetX = (float)GetScreenWidth();
+			toggleOpen();
 		}
 	}
 	float dt = GetFrameTime();
@@ -55,11 +51,18 @@ void Zappy::Hud::update()
 	}
 }
 
+/**
+* @brief Sets the messages to be displayed in the HUD.
+* @param messages The vector of strings containing the messages.
+**/
 void Zappy::Hud::setMessages(const std::vector<std::string> &messages)
 {
 	_messages = messages;
 }
 
+/**
+* @brief Draws the HUD.
+**/
 void Zappy::Hud::draw() const
 {
 	DrawRectangleRec(_buttonRect, LIGHTGRAY);
@@ -83,7 +86,70 @@ void Zappy::Hud::draw() const
 	}
 }
 
+/**
+* @brief Checks if the HUD is open.
+* @return True if the HUD is open, false otherwise.
+*/
 bool Zappy::Hud::isOpen() const
 {
 	return _open;
+}
+
+/**
+* @brief Toggles the open state of the HUD.
+**/
+void Zappy::Hud::toggleOpen()
+{
+	_open = !_open;
+	if (_open)
+		_targetX = (float)GetScreenWidth() - _panelWidth;
+	else
+		_targetX = (float)GetScreenWidth();
+}
+
+/**
+* @brief Sets the opening state of the HUD.
+* @param open The new opening state of the HUD.
+**/
+void Zappy::Hud::setOpening(bool open)
+{
+	_open = open;
+}
+
+/**
+* @brief Draws the inventory for a specific tile.
+* @param x The x-coordinate of the tile.
+* @param y The y-coordinate of the tile.
+* @param tile The tile instance.
+**/
+void Zappy::Hud::drawTileInventory(int x, int y, const Zappy::Tile &tile) const
+{
+    int panelWidth = 250;
+    int panelHeight = 350;
+    int startX = 10;
+    int startY = 40;
+
+    Zappy::Shape3D::drawRectangle(startX, startY, panelWidth, panelHeight, Fade(BLACK, 0.7f));
+    Zappy::Shape3D::drawRectangleLines(startX, startY, panelWidth, panelHeight, WHITE);
+
+    std::string title = "=== TILE [" + std::to_string(x) + ", " + std::to_string(y) + "] ===";
+    DrawText(title.c_str(), startX + 20, startY + 20, 20, RAYWHITE);
+
+    int textY = startY + 70;
+    int fontSize = 20;
+    int spacing = 35;
+
+    auto drawResourceInfo = [&](const std::string& name, Zappy::RESSOURCE res, Color color) {
+        std::string line = name + " : " + std::to_string(tile.getResource(res));
+        DrawText(line.c_str(), startX + 20, textY, fontSize, color);
+        textY += spacing;
+    };
+
+    drawResourceInfo("Food", Zappy::RESSOURCE::FOOD, ORANGE);
+    drawResourceInfo("Linemate", Zappy::RESSOURCE::LINEMATE, PURPLE);
+    drawResourceInfo("Deraumere", Zappy::RESSOURCE::DERAUMERE, BLUE);
+    drawResourceInfo("Sibur", Zappy::RESSOURCE::SIBUR, GREEN);
+    drawResourceInfo("Mendiane", Zappy::RESSOURCE::MENDIANE, RED);
+    drawResourceInfo("Phiras", Zappy::RESSOURCE::PHIRAS, GOLD);
+    drawResourceInfo("Thystame", Zappy::RESSOURCE::THYSTAME, SKYBLUE);
 }

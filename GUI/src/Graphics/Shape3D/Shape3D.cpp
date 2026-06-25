@@ -33,3 +33,29 @@ void Zappy::Shape3D::drawCylinderWires(Vector3 position, float radiusTop, float 
 {
     ::DrawCylinderWires(position, radiusTop, radiusBottom, height, slices, color);
 }
+
+/**
+* @brief Draws a rectangle at the specified position with the given dimensions and color.
+* @param posX The x-coordinate of the rectangle.
+* @param posY The y-coordinate of the rectangle.
+* @param width The width of the rectangle.
+* @param height The height of the rectangle.
+* @param color The color of the rectangle.
+**/
+void Zappy::Shape3D::drawRectangle(int posX, int posY, int width, int height, Color color)
+{
+    ::DrawRectangle(posX, posY, width, height, color);
+}
+
+/**
+* @brief Draws the outline of a rectangle at the specified position with the given dimensions and color.
+* @param posX The x-coordinate of the rectangle.
+* @param posY The y-coordinate of the rectangle.
+* @param width The width of the rectangle.
+* @param height The height of the rectangle.
+* @param color The color of the rectangle.
+**/
+void Zappy::Shape3D::drawRectangleLines(int posX, int posY, int width, int height, Color color)
+{
+    ::DrawRectangleLines(posX, posY, width, height, color);
+}

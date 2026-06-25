@@ -33,6 +33,8 @@ namespace Zappy
             Vector3 getPosition() const;
             Vector3 getTarget() const;
             int getMode() const;
+            Camera3D getCamera() const;
+            Ray getMouseRay(Vector2 mousePosition) const;
 
         private:
             Camera3D _camera;

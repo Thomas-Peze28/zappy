@@ -8,19 +8,45 @@
 #include "Engine.hpp"
 
 /**
+* Resolves the absolute path for a given asset file.
+* @param relativePath The relative path to the asset file.
+* @return The absolute path to the asset file.
+**/
+std::string Zappy::Engine::resolveAssetPath(const std::string &relativePath)
+{
+    std::error_code errorCode;
+    const std::filesystem::path executablePath = std::filesystem::read_symlink("/proc/self/exe", errorCode);
+    const std::filesystem::path executableDir = errorCode ? std::filesystem::current_path() : executablePath.parent_path();
+
+    const std::filesystem::path possiblePaths[] = {
+        executableDir / relativePath,
+        executableDir / "GUI" / relativePath,
+        std::filesystem::current_path() / relativePath,
+        std::filesystem::current_path() / "GUI" / relativePath,
+    };
+
+    for (const std::filesystem::path &candidate : possiblePaths) {
+        if (std::filesystem::exists(candidate))
+            return candidate.string();
+    }
+
+    return (executableDir / relativePath).string();
+}
+
+/**
 * Initializes the Engine with default parameters.
 **/
 Zappy::Engine::Engine() : Engine(1280, 720, "Zappy - GUI")
 {
-    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
-    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>("assets/object/Linemate.glb");
-    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>("assets/object/Deraumere.glb");
-    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>("assets/object/Sibur.glb");
-    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>("assets/object/Mendiane.glb");
-    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
-    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
-    _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
+    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Food.glb"));
+    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Linemate.glb"));
+    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Deraumere.glb"));
+    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Sibur.glb"));
+    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Mendiane.glb"));
+    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Phiras.glb"));
+    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Thystame.glb"));
+    _playerModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Generic_Male.glb"));
+    _eggModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Egg.glb"));
 }
 
 /**
@@ -33,26 +59,28 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
     : _audioDevice(),
       _window(width, height, title, 60),
       _camera({15.0f, 15.0f, 15.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f),
-      _hexTile("assets/object/GrassTile.glb"),
-      _mainFont("assets/fonts/Roboto-Black.ttf"),
+            _hexTile(resolveAssetPath("assets/object/GrassTile.glb")),
+            _mainFont(resolveAssetPath("assets/fonts/Roboto-Black.ttf")),
       _title(_mainFont, "EPITECH - ZAPPY", {500.0f, 20.0f}, 40.0f, DARKBLUE),
-      _sprite("assets/sprites/epitech.png"),
-      _music("assets/audio/music.mp3"),
-      _sound("assets/audio/sound.mp3"),
-      _gap(0.3f)
+            _sprite(resolveAssetPath("assets/sprites/epitech.png")),
+            _music(resolveAssetPath("assets/audio/music.mp3")),
+            _sound(resolveAssetPath("assets/audio/sound.mp3")),
+      _gap(0.3f),
+      _selectedX(-1),
+      _selectedY(-1)
 {
     _audioDevice.setMasterVolume(0.5f);
     _music.play();
 
-    _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>("assets/object/Food.glb");
-    _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>("assets/object/Linemate.glb");
-    _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>("assets/object/Deraumere.glb");
-    _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>("assets/object/Sibur.glb");
-    _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>("assets/object/Mendiane.glb");
-    _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>("assets/object/Phiras.glb");
-    _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>("assets/object/Thystame.glb");
-    _playerModel = std::make_unique<Zappy::Model3D>("assets/object/Generic_Male.glb");
-    _eggModel = std::make_unique<Zappy::Model3D>("assets/object/Egg.glb");
+        _resourceModels[Zappy::RESSOURCE::FOOD] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Food.glb"));
+        _resourceModels[Zappy::RESSOURCE::LINEMATE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Linemate.glb"));
+        _resourceModels[Zappy::RESSOURCE::DERAUMERE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Deraumere.glb"));
+        _resourceModels[Zappy::RESSOURCE::SIBUR] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Sibur.glb"));
+        _resourceModels[Zappy::RESSOURCE::MENDIANE] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Mendiane.glb"));
+        _resourceModels[Zappy::RESSOURCE::PHIRAS] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Phiras.glb"));
+        _resourceModels[Zappy::RESSOURCE::THYSTAME] = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Thystame.glb"));
+        _playerModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Generic_Male.glb"));
+        _eggModel = std::make_unique<Zappy::Model3D>(resolveAssetPath("assets/object/Egg.glb"));
 }
 
 /**
@@ -71,7 +99,9 @@ void Zappy::Engine::nextCameraMode()
 {
     if (_camera.getMode() == CAMERA_FREE)
         _camera.setMode(CAMERA_ORBITAL);
-    else
+    else if (_camera.getMode() == CAMERA_ORBITAL)
+        _camera.setMode(CAMERA_PERSPECTIVE);
+    else if (_camera.getMode() == CAMERA_PERSPECTIVE)
         _camera.setMode(CAMERA_FREE);
 }
 
@@ -85,8 +115,11 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
         return 1;
     if (Zappy::Input::isKeyPressed(KEY_SPACE))
         _sound.play();
-    if (Zappy::Input::isKeyPressed(KEY_F))
+    if (Zappy::Input::isKeyPressed(KEY_F)) {
         _window.toggleFullscreen();
+        _hud.toggleOpen();
+    }
+
     if (Zappy::Input::isKeyPressed(KEY_C))
         nextCameraMode();
     if (Zappy::Input::isKeyPressed(KEY_P))
@@ -111,9 +144,10 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
     if (Zappy::Input::isKeyPressed(KEY_L))
-        std::cout << "Toggle HUD" << std::endl;
+        _hud.toggleOpen();
     if (Zappy::Input::isKeyPressed(KEY_SPACE))
         get_map_content(game, server);
+    handleMouseSelection(game);
     return 0;
 }
 
@@ -202,6 +236,8 @@ void Zappy::Engine::renderTile(const Zappy::Game &game) const
             float xPos = x * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
             float zPos = y * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
 
+            if (x == _selectedX && y == _selectedY)
+                Zappy::Shape3D::drawCylinderWires({xPos, 0.05f, zPos}, 0.75f, 0.55f, 0.1f, 12, WHITE);
             _hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
 
             const Zappy::Tile &tile = map.getTile(x, y);
@@ -346,12 +382,20 @@ void Zappy::Engine::render3D(const Zappy::Game &game)
 **/
 void Zappy::Engine::render2D(const Zappy::Game &game)
 {
+    int screenHeight = GetScreenHeight();
+    int screenWidth = GetScreenWidth();
+
     _title.draw();
-    _sprite.draw({10.0f, 50.0f, 0.0f}, 0.1f, WHITE);
+    _sprite.draw({10.0f, (float)screenHeight - 75.0f, 0.0f}, 0.1f, WHITE);
     _window.drawFPS(10, 10);
 
-    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {10.0f, 110.0f}, 20.0f, BLACK);
+    Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {(float)screenWidth - 150.0f, (float)screenHeight - 40.0f}, 20.0f, BLACK);
     timeUnitText.draw();
+
+    if (_selectedX != -1 && _selectedY != -1) {
+        const Zappy::Tile &tile = game.getMap().getTile(_selectedX, _selectedY);
+        _hud.drawTileInventory(_selectedX, _selectedY, tile); 
+    }
 
     _hud.update();
     _hud.setMessages(game.getNotifications());
@@ -374,6 +418,42 @@ void Zappy::Engine::render(const Zappy::Game &game)
     _camera.endMode();
     render2D(game);
     _window.endDrawing();
+}
+
+/**
+* Handles mouse selection for tile interaction.
+* @param game The game instance.
+**/
+void Zappy::Engine::handleMouseSelection(const Zappy::Game &game)
+{
+    if (Zappy::Input::isMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        
+        Ray ray = _camera.getMouseRay(Zappy::Input::getMousePosition());
+    
+        if (ray.direction.y < 0.0f) {
+            
+            float t = -ray.position.y / ray.direction.y;
+            Vector3 hitPoint = { ray.position.x + ray.direction.x * t, 0.0f, ray.position.z + ray.direction.z * t };
+
+            const Zappy::Map &map = game.getMap();
+            int mapWidth = map.getWidth();
+            int mapHeight = map.getHeight();
+
+            float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
+            float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
+
+            int gridX = std::round((hitPoint.x + totalWidth / 2.0f) / (_hexTile.getWidth() + _gap));
+            int gridY = std::round((hitPoint.z + totalDepth / 2.0f) / (_hexTile.getDepth() + _gap));
+
+            if (gridX >= 0 && gridX < mapWidth && gridY >= 0 && gridY < mapHeight) {
+                _selectedX = gridX;
+                _selectedY = gridY;
+            } else {
+                _selectedX = -1; 
+                _selectedY = -1;
+            }
+        }
+    }
 }
 
 /**

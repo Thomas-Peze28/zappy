@@ -11,6 +11,7 @@ YELLOW=\033[0;33m
 BLUE=\033[0;34m
 MAGENTA=\033[0;35m
 CYAN=\033[0;36m
+BOLD=\033[1m
 RESET=\033[0m
 
 .SILENT:
@@ -46,7 +47,20 @@ fclean: clean
 	rm -f zappy_server zappy_ai zappy_gui
 	@printf "$(YELLOW)[INFO]$(RESET) Binaries removed.\n"
 
+run:
+	$(MAKE) --no-print-directory -C ./
+	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
+	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
+	./zappy_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
+	sleep 1; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
+	./zappy_ai -p 5252 -n Team1 >test/zappy_ai.log 2>&1 & ai_pid=$$!; \
+	sleep 1; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI binary...\n"; \
+	./zappy_gui -h localhost -p 5252
+	${MAKE} --no-print-directory -C ./ fclean
+
 re: fclean all
 	@printf "$(BLUE)[INFO]$(RESET) Project rebuilt successfully.\n"
 
-.PHONY: all zappy_server zappy_ai zappy_gui clean fclean re tests_run clean_tests
+.PHONY: all zappy_server zappy_ai zappy_gui clean fclean re run clean_tests
