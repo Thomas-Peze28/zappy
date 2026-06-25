@@ -65,7 +65,9 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
             _sprite(resolveAssetPath("assets/sprites/epitech.png")),
             _music(resolveAssetPath("assets/audio/music.mp3")),
             _sound(resolveAssetPath("assets/audio/sound.mp3")),
-      _gap(0.3f)
+      _gap(0.3f),
+      _selectedX(0),
+      _selectedY(0)
 {
     _audioDevice.setMasterVolume(0.5f);
     _music.play();
@@ -159,6 +161,7 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
         _hud.toggleOpen();
     }
 
+    handleMouseSelection(game);
     return 0;
 }
 
@@ -398,6 +401,11 @@ void Zappy::Engine::render2D(const Zappy::Game &game)
     Text timeUnitText(_mainFont, "Time Unit: " + std::to_string(game.getTimeUnit()), {10.0f, 110.0f}, 20.0f, BLACK);
     timeUnitText.draw();
 
+    if (_selectedX != -1 && _selectedY != -1) {
+        const Zappy::Tile &tile = game.getMap().getTile(_selectedX, _selectedY);
+        _hud.drawTileInventory(_selectedX, _selectedY, tile); 
+    }
+
     _hud.update();
     _hud.setMessages(game.getNotifications());
     _hud.draw();
@@ -419,4 +427,40 @@ void Zappy::Engine::render(const Zappy::Game &game)
     _camera.endMode();
     render2D(game);
     _window.endDrawing();
+}
+
+/**
+* Handles mouse selection for tile interaction.
+* @param game The game instance.
+**/
+void Zappy::Engine::handleMouseSelection(const Zappy::Game &game)
+{
+    if (Zappy::Input::isMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        
+        Ray ray = _camera.getMouseRay(Zappy::Input::getMousePosition());
+    
+        if (ray.direction.y < 0.0f) {
+            
+            float t = -ray.position.y / ray.direction.y;
+            Vector3 hitPoint = { ray.position.x + ray.direction.x * t, 0.0f, ray.position.z + ray.direction.z * t };
+
+            const Zappy::Map &map = game.getMap();
+            int mapWidth = map.getWidth();
+            int mapHeight = map.getHeight();
+
+            float totalWidth = (mapWidth - 1) * (_hexTile.getWidth() + _gap);
+            float totalDepth = (mapHeight - 1) * (_hexTile.getDepth() + _gap);
+
+            int gridX = std::round((hitPoint.x + totalWidth / 2.0f) / (_hexTile.getWidth() + _gap));
+            int gridY = std::round((hitPoint.z + totalDepth / 2.0f) / (_hexTile.getDepth() + _gap));
+
+            if (gridX >= 0 && gridX < mapWidth && gridY >= 0 && gridY < mapHeight) {
+                _selectedX = gridX;
+                _selectedY = gridY;
+            } else {
+                _selectedX = -1; 
+                _selectedY = -1;
+            }
+        }
+    }
 }

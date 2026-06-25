@@ -65,6 +65,7 @@ namespace Zappy
             void render3D(const Zappy::Game &game);
             void render2D(const Zappy::Game &game);
             std::string resolveAssetPath(const std::string &relativePath);
+            void handleMouseSelection(const Zappy::Game &game);
 
             Zappy::AudioDevice _audioDevice;
             Zappy::Window _window;
@@ -87,5 +88,8 @@ namespace Zappy
             Zappy::Hud _hud;
 
             float _gap;
+
+            int _selectedX;
+            int _selectedY;
     };
 };
