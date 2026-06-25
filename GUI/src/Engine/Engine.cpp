@@ -252,6 +252,8 @@ void Zappy::Engine::renderTile(const Zappy::Game &game) const
             float xPos = x * (_hexTile.getWidth() + _gap) - (totalWidth / 2.0f);
             float zPos = y * (_hexTile.getDepth() + _gap) - (totalDepth / 2.0f);
 
+            if (x == _selectedX && y == _selectedY)
+                Zappy::Shape3D::drawCylinderWires({xPos, 0.05f, zPos}, 0.75f, 0.55f, 0.1f, 12, WHITE);
             _hexTile.draw({xPos, 0.0f, zPos}, 1.0f, WHITE);
 
             const Zappy::Tile &tile = map.getTile(x, y);
