@@ -40,3 +40,13 @@ void gui_notify_pfk(server_t *server, client_t *player)
     snprintf(buf, MAX_CMD_LEN, "pfk #%d\n", player->id);
     send_to_all_gui(server, buf);
 }
+
+void gui_notify_ppo(server_t *server, client_t *player)
+{
+    char buf[MAX_CMD_LEN];
+
+    snprintf(buf, MAX_CMD_LEN, "ppo #%d %d %d %d\n",
+        player->id, player->pos_x, player->pos_y,
+        player->orientation);
+    send_to_all_gui(server, buf);
+}

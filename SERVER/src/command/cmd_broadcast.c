@@ -6,6 +6,7 @@
 */
 
 #include "command.h"
+#include "gui.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -60,5 +61,6 @@ void cmd_broadcast(server_t *server, client_t *client, const char *text)
             send_to_client(receiver, buf);
         }
     }
+    gui_notify_pbc(server, client, text);
     send_to_client(client, "ok\n");
 }

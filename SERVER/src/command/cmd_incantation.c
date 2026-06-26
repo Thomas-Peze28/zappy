@@ -6,6 +6,7 @@
 */
 
 #include "command.h"
+#include "gui.h"
 #include <stdio.h>
 
 static int check_tile_resources(tile_t *tile, const incantation_req_t *req)
@@ -44,11 +45,32 @@ static void consume_resources(tile_t *tile, const incantation_req_t *req)
     tile->thystame -= req->thystame;
 }
 
+static void elevate_players_on_tile(server_t *server, client_t *client)
+{
+    int i;
+    char buf[64];
+
+    for (i = 0; i < server->client_count; i++) {
+        if (server->clients[i].type != CLIENT_AI)
+            continue;
+        if (server->clients[i].pos_x != client->pos_x)
+            continue;
+        if (server->clients[i].pos_y != client->pos_y)
+            continue;
+        if (server->clients[i].level != client->level)
+            continue;
+        server->clients[i].level++;
+        snprintf(buf, sizeof(buf), "Current level: %d\n",
+            server->clients[i].level);
+        send_to_client(&server->clients[i], buf);
+        gui_notify_plv(server, &server->clients[i]);
+    }
+}
+
 void cmd_incantation(server_t *server, client_t *client)
 {
     tile_t *tile = &server->map->tiles[client->pos_y][client->pos_x];
     const incantation_req_t *req;
-    char buf[64];
     int p_count = count_players_on_tile(server, client);
 
     if (client->level < 1 || client->level > 7) {
@@ -60,8 +82,8 @@ void cmd_incantation(server_t *server, client_t *client)
         send_to_client(client, "ko\n");
         return;
     }
+    gui_notify_pic(server, client);
     consume_resources(tile, req);
-    client->level++;
-    snprintf(buf, sizeof(buf), "Current level: %d\n", client->level);
-    send_to_client(client, buf);
+    elevate_players_on_tile(server, client);
+    gui_notify_pie(server, client, 1);
 }
