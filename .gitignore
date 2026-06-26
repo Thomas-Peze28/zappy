@@ -5,6 +5,7 @@
 *.pdf
 *.txt
 test*
+*.log
 zappy_gui
 zappy_server
 zappy_ai
