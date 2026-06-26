@@ -1,6 +1,6 @@
 import math
-import time
 import os
+import time
 from collections import deque
 
 from .zappy_broadcast import ZappyBroadcastCoordinator
@@ -17,45 +17,82 @@ class ZappyAI:
         7: [6, 1, 2, 3, 0, 1, 0],
         8: [6, 2, 2, 2, 2, 2, 1],
     }
-    STONES = ["linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"]
-    FORK_COOLDOWN = 30.0
-    CONNECT_NBR_COOLDOWN = 10.0
 
-    def __init__(self, manager, sock, team_name, remaining_slots, map_x, map_y):
+    STONES = ["linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"]
+
+    ROLE_PILLAR = "pillar"
+    ROLE_FOOD = "food_supplier"
+    ROLE_STONE = "stone_collector"
+
+    MAX_PENDING_COMMANDS = 10
+    TARGET_DRONES = 8
+
+    CONNECT_NBR_COOLDOWN = 2.0
+    INVENTORY_BROADCAST_COOLDOWN = 8.0
+    PILLAR_BROADCAST_COOLDOWN = 3.0
+    PILLAR_CALL_COOLDOWN = 3.0
+    PILLAR_FEED_COOLDOWN = 1.0
+
+    PILLAR_MIN_FOOD_TO_FORK = 20
+    PILLAR_MIN_FOOD_TO_FORK_AFTER_TARGET = 35
+    PILLAR_MIN_FOOD_TO_BROADCAST = 12
+
+    FOOD_SUPPLIER_RETURN_FOOD = 10
+    STONE_COLLECTOR_MIN_FOOD = 15
+
+    MIN_FOOD_TO_FOLLOW = 10
+    DRONE_MIN_FOOD_ON_PILLAR = 8
+    PILLAR_MIN_FOOD_TO_GIVE = 3
+    PILLAR_FOOD_PER_DRONE = 8
+    PILLAR_FOOD_RESERVE = 20
+
+    def __init__(self, manager, sock, team_name, remaining_slots, map_x, map_y, role=ROLE_STONE):
         self.manager = manager
         self.sock = sock
         self.team_name = team_name
         self.remaining_slots = remaining_slots
         self.map_x = map_x
         self.map_y = map_y
+        self.role = role
+
         self.read_buffer = ""
         self.command_queue = deque()
         self.sent_commands = deque()
+
         self.inventory = {}
         self.vision = []
         self.inventory_fresh = False
         self.vision_fresh = False
+
         self.state = DroneState.SEARCH_FOOD
         self.level = 1
-        self.food_threshold = 15
-        self.last_fork_time = 0.0
-        self.last_connect_nbr_time = time.time()
+
         self.drone_id = f"{os.getpid()}-{self.sock.fileno()}-{int(time.time() * 1000)}"
         self.broadcast = ZappyBroadcastCoordinator(team_name, self.drone_id)
-        self.known_drones = {}
+
+        self.initial_team_capacity = max(1, remaining_slots + 1)
+        self.available_slots = remaining_slots
+
+        self.last_connect_nbr_time = 0.0
         self.last_inventory_broadcast = 0.0
-        self.INVENTORY_BROADCAST_COOLDOWN = 8.0
+        self.last_pillar_broadcast = 0.0
+        self.last_pillar_call = 0.0
+        self.last_food_drop = 0.0
+
+        self.pillar_direction = None
+        self.waiting_food_on_pillar = False
 
     def queue_command(self, command):
         self.command_queue.append(command)
         self._flush_commands()
 
     def _flush_commands(self):
-        while self.command_queue and len(self.sent_commands) < 10:
-            cmd = self.command_queue.popleft()
+        while self.command_queue and len(self.sent_commands) < self.MAX_PENDING_COMMANDS:
+            command = self.command_queue.popleft()
+
             try:
-                self.sock.sendall((cmd + "\n").encode("utf-8"))
-                self.sent_commands.append(cmd)
+                self.sock.sendall((command + "\n").encode("utf-8"))
+                self.sent_commands.append(command)
             except Exception:
                 self.manager.disconnect()
                 return
@@ -63,11 +100,14 @@ class ZappyAI:
     def receive_data(self):
         try:
             data = self.sock.recv(4096)
+
             if not data:
                 self.manager.disconnect()
                 return
+
             self.read_buffer += data.decode("utf-8")
             self._process_buffer()
+
         except BlockingIOError:
             pass
         except Exception:
@@ -76,87 +116,79 @@ class ZappyAI:
     def _process_buffer(self):
         while "\n" in self.read_buffer:
             line, self.read_buffer = self.read_buffer.split("\n", 1)
-            line = line.strip()
+            self._handle_server_line(line.strip())
 
-            if line == "dead":
-                print("[*] Le drone est mort de faim.")
-                self.manager.disconnect()
+            if self.manager.client is None:
                 return
-
-            if line.startswith("message"):
-                parts = line.replace("message ", "").split(",", 1)
-                if len(parts) == 2:
-                    try:
-                        self._handle_broadcast(int(parts[0].strip()), parts[1].strip())
-                    except ValueError:
-                        pass
-                continue
-
-            if line.startswith("eject:"):
-                continue
-
-            if line.startswith("Current level:"):
-                try:
-                    self.level = int(line.split(":")[1].strip())
-                    print(f"[IA] Niveau {self.level} atteint !")
-                    self.state = DroneState.SEARCH_FOOD
-                    self.inventory_fresh = False
-                    self.vision_fresh = False
-                except ValueError:
-                    pass
-                continue
-
-            if self.sent_commands:
-                original_cmd = self.sent_commands.popleft()
-                self._handle_response(original_cmd, line)
 
             self._flush_commands()
 
+    def _handle_server_line(self, line):
+        if line == "dead":
+            print("[*] Le drone est mort de faim.")
+            self.manager.disconnect()
+            return
+
+        if line.startswith("message"):
+            self._handle_message_line(line)
+            return
+
+        if line.startswith("eject:"):
+            return
+
+        if line.startswith("Current level:"):
+            self._handle_level_up(line)
+            return
+
+        if self.sent_commands:
+            command = self.sent_commands.popleft()
+            self._handle_response(command, line)
+
+    def _handle_message_line(self, line):
+        parts = line.replace("message ", "", 1).split(",", 1)
+
+        if len(parts) != 2:
+            return
+
+        try:
+            direction = int(parts[0].strip())
+        except ValueError:
+            return
+
+        self._handle_broadcast(direction, parts[1].strip())
+
+    def _handle_level_up(self, line):
+        try:
+            self.level = int(line.split(":", 1)[1].strip())
+        except ValueError:
+            return
+
+        print(f"[IA] Niveau {self.level} atteint !")
+        self.state = DroneState.SEARCH_FOOD
+        self._invalidate_data()
+
     def _handle_response(self, command, response):
         if command == "Inventory":
-            clean_text = response.strip("[]")
-            parsed = {}
-            for item in clean_text.split(","):
-                parts = item.strip().split()
-                if len(parts) == 2:
-                    try:
-                        parsed[parts[0]] = int(parts[1])
-                    except ValueError:
-                        pass
-            self.inventory = parsed
+            self.inventory = self._parse_inventory(response)
             self.inventory_fresh = True
-            self._broadcast_inventory()
             return
 
         if command == "Look":
-            clean_text = response.strip("[]")
-            self.vision = [tile.strip().split() for tile in clean_text.split(",")]
+            self.vision = self._parse_vision(response)
             self.vision_fresh = True
             return
 
-        if command == "Incantation":
-            if response == "Elevation underway":
-                print("[IA] Rituel en cours, je me fige.")
-                self.command_queue.clear()
-            elif response == "ko":
-                print("[IA] Échec incantation (ko). Reset.")
-                self.inventory_fresh = False
-                self.vision_fresh = False
-                self.state = DroneState.SEARCH_FOOD
+        if command == "Connect_nbr":
+            self._handle_connect_nbr_response(response)
             return
 
         if command == "Fork" and response == "ok":
-            print("[IA] Œuf pondu ! Demande des slots disponibles...")
+            print("[IA] Oeuf pondu.")
             self.queue_command("Connect_nbr")
             return
 
-        if command == "Connect_nbr":
-            try:
-                available_slots = int(response)
-                if available_slots > 0:
-                    print(f"[IA] {available_slots} slot(s) disponible(s) sur le serveur. Prêt pour un nouveau drone !")
-            except ValueError:
-                pass
+        if command == "Incantation":
+            self._handle_incantation_response(response)
             return
 
         if command.startswith("Take") and response == "ko":
@@ -167,288 +199,488 @@ class ZappyAI:
             resource = command.split(" ", 1)[-1]
             print(f"[IA] Impossible de déposer '{resource}' (ko).")
 
-    def _handle_inventory_broadcast(self, frame):
-        drone_id = frame.get("leader_id")
-        payload = frame.get("payload", {})
-        inventory = payload.get("inventory", {})
-
-        if not drone_id or drone_id == self.drone_id:
+    def _handle_connect_nbr_response(self, response):
+        try:
+            self.available_slots = int(response)
+        except ValueError:
             return
 
-        self.known_drones[drone_id] = {
-            "level": frame.get("level", 0),
-            "inventory": inventory,
-            "last_seen": time.time(),
-        }
+        print(f"[IA] Slots disponibles: {self.available_slots}")
 
-        print(
-            f"[IA] Info inventaire reçue de {drone_id}: "
-            f"lvl={frame.get('level', 0)} inv={inventory}"
-        )
+    def _handle_incantation_response(self, response):
+        if response == "Elevation underway":
+            print("[IA] Rituel en cours, je me fige.")
+            self.command_queue.clear()
+            return
 
-    def _handle_broadcast(self, k, text):
+        if response == "ko":
+            print("[IA] Echec incantation (ko). Reset.")
+            self.state = DroneState.SEARCH_FOOD
+            self._invalidate_data()
+
+    def _parse_inventory(self, response):
+        inventory = {}
+
+        for item in response.strip("[]").split(","):
+            parts = item.strip().split()
+
+            if len(parts) != 2:
+                continue
+
+            try:
+                inventory[parts[0]] = int(parts[1])
+            except ValueError:
+                pass
+
+        return inventory
+
+    def _parse_vision(self, response):
+        return [tile.strip().split() for tile in response.strip("[]").split(",")]
+
+    def _handle_broadcast(self, direction, text):
+        if self._handle_plain_broadcast(direction, text):
+            return
+
         frame = self.broadcast.parse_incoming(text)
+
         if not frame:
             return
 
-        kind = frame.get("kind")
-
-        if kind == "inventory-status":
-            self._handle_inventory_broadcast(frame)
+        if frame.get("kind") == "inventory-status":
             return
 
-        if kind != "elevation-request":
+        if frame.get("kind") == "elevation-request":
+            self._handle_elevation_broadcast(direction, frame)
+
+    def _handle_plain_broadcast(self, direction, text):
+        parts = text.strip().split("|")
+
+        if len(parts) < 3 or parts[0] != self.team_name:
+            return False
+
+        sender_role = parts[1]
+        action = parts[2]
+
+        if sender_role == "PILLAR":
+            self.pillar_direction = direction
+            self._handle_pillar_broadcast(direction, action)
+            return True
+
+        if sender_role == "DRONE" and action == "NEED_FOOD":
+            if self.role == self.ROLE_PILLAR and direction == 0:
+                self._pillar_feed_drone()
+            return True
+
+        return False
+
+    def _handle_pillar_broadcast(self, direction, action):
+        if action == "POS":
             return
 
+        if action == "CALL_STONES" and self.role == self.ROLE_STONE:
+            self._go_to_pillar(direction)
+            return
+
+        if action == "CALL_FOOD" and self.role == self.ROLE_FOOD:
+            self._go_to_pillar(direction)
+            return
+
+        if action == "CALL_ALL" and self.role in (self.ROLE_STONE, self.ROLE_FOOD):
+            self._go_to_pillar(direction)
+
+    def _handle_elevation_broadcast(self, direction, frame):
         target_level = frame.get("level", 0)
 
         if target_level != self.level + 1:
             return
 
-        if self.inventory.get("food", 0) <= 10:
+        if self.inventory.get("food", 0) <= self.MIN_FOOD_TO_FOLLOW:
             return
 
         if not self.broadcast.should_follow(frame):
             return
 
         self.command_queue.clear()
-        self.state = DroneState.JOIN_ELEVATION
 
-        if k == 0:
+        if direction == 0:
             print("[IA] FOLLOWER : Arrivé sur la case du leader.")
-        else:
-            print(f"[IA] FOLLOWER : Je rejoins le broadcast direction {k}.")
-            self._move_to_sound(k)
-
-    def _team_elevation(self):
-        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-        if not req:
-            return False
-
-        now = time.time()
-        same_level_helpers = 1
-        total_stones = {
-            stone: self.inventory.get(stone, 0)
-            for stone in self.STONES
-        }
-
-        for drone in self.known_drones.values():
-            if now - drone.get("last_seen", 0) > 20:
-                continue
-
-            if drone.get("level") != self.level:
-                continue
-
-            inv = drone.get("inventory", {})
-            if inv.get("food", 0) <= 10:
-                continue
-
-            same_level_helpers += 1
-
-            for stone in self.STONES:
-                total_stones[stone] += inv.get(stone, 0)
-
-        if same_level_helpers < req[0]:
-            return False
-
-        for i, stone in enumerate(self.STONES):
-            if total_stones[stone] < req[i + 1]:
-                return False
-
-        return True
-
-    def _move_to_sound(self, k):
-        if k == 1:
-            self.queue_command("Forward")
-        elif k == 2:
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-        elif k == 3:
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-        elif k == 4:
-            self.queue_command("Right")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-            self.queue_command("Left")
-        elif k == 5:
-            self.queue_command("Right")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Right")
-        elif k == 6:
-            self.queue_command("Left")
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Right")
-        elif k == 7:
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-        elif k == 8:
-            self.queue_command("Forward")
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-
-    def move_to_target(self, target_index):
-        if target_index == 0:
             return
-        r = int(math.sqrt(target_index))
-        c = target_index - (r * r) - r
-        for _ in range(r):
-            self.queue_command("Forward")
-        if c < 0:
-            self.queue_command("Left")
-            for _ in range(abs(c)):
-                self.queue_command("Forward")
-            self.queue_command("Right")
-        elif c > 0:
-            self.queue_command("Right")
-            for _ in range(abs(c)):
-                self.queue_command("Forward")
-            self.queue_command("Left")
 
-    def _missing_stones(self):
-        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-        if not req:
-            return {}
-        return {
-            stone: req[i + 1] - self.inventory.get(stone, 0)
-            for i, stone in enumerate(self.STONES)
-            if self.inventory.get(stone, 0) < req[i + 1]
-        }
+        print(f"[IA] FOLLOWER : Je rejoins le broadcast direction {direction}.")
+        self._move_to_sound(direction)
 
-    def _is_ready_for_elevation(self):
-        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-        if not req:
-            return False
-        return all(
-            self.inventory.get(stone, 0) >= req[i + 1]
-            for i, stone in enumerate(self.STONES)
-        )
-    
     def _broadcast_inventory(self):
         now = time.time()
 
         if now - self.last_inventory_broadcast < self.INVENTORY_BROADCAST_COOLDOWN:
             return
 
-        if self.inventory.get("food", 0) <= 10:
+        if self.inventory.get("food", 0) <= self.MIN_FOOD_TO_FOLLOW:
             return
 
         packet = self.broadcast.build_inventory_packet(
             self.level,
-            {
-                "food": self.inventory.get("food", 0),
-                "linemate": self.inventory.get("linemate", 0),
-                "deraumere": self.inventory.get("deraumere", 0),
-                "sibur": self.inventory.get("sibur", 0),
-                "mendiane": self.inventory.get("mendiane", 0),
-                "phiras": self.inventory.get("phiras", 0),
-                "thystame": self.inventory.get("thystame", 0),
-            }
+            {resource: self.inventory.get(resource, 0) for resource in ["food"] + self.STONES},
         )
 
         self.queue_command(f"Broadcast {packet}")
         self.last_inventory_broadcast = now
 
+    def _broadcast_pillar_position(self):
+        now = time.time()
+
+        if now - self.last_pillar_broadcast < self.PILLAR_BROADCAST_COOLDOWN:
+            return
+
+        if self.inventory.get("food", 0) < self.PILLAR_MIN_FOOD_TO_BROADCAST:
+            return
+
+        self.queue_command(f"Broadcast {self.team_name}|PILLAR|POS|{self.level}|{self.drone_id}")
+        self.last_pillar_broadcast = now
+
+    def _call_stone_collectors(self):
+        self._pillar_call("CALL_STONES")
+
+    def _call_food_suppliers(self):
+        self._pillar_call("CALL_FOOD")
+
+    def _call_all_drones(self):
+        self._pillar_call("CALL_ALL")
+
+    def _pillar_call(self, action):
+        now = time.time()
+
+        if now - self.last_pillar_call < self.PILLAR_CALL_COOLDOWN:
+            return
+
+        self.queue_command(f"Broadcast {self.team_name}|PILLAR|{action}|{self.level}|{self.drone_id}")
+        self.last_pillar_call = now
+
     def think(self):
         if self.command_queue or self.sent_commands:
             return
 
-        if time.time() - self.last_connect_nbr_time > self.CONNECT_NBR_COOLDOWN:
-            self.queue_command("Connect_nbr")
-            self.last_connect_nbr_time = time.time()
+        if self._refresh_data_if_needed():
             return
 
-        needs_refresh = False
+        handlers = {
+            self.ROLE_PILLAR: self.think_pillar,
+            self.ROLE_FOOD: self.think_food_supplier,
+            self.ROLE_STONE: self.think_stone_collector,
+        }
+
+        handlers.get(self.role, self.think_stone_collector)()
+        self._invalidate_data()
+
+    def _refresh_data_if_needed(self):
         if not self.inventory_fresh:
             self.queue_command("Inventory")
-            needs_refresh = True
+            return True
+
         if not self.vision_fresh:
             self.queue_command("Look")
-            needs_refresh = True
-        if needs_refresh:
+            return True
+
+        return False
+
+    def _refresh_connect_nbr_if_needed(self):
+        now = time.time()
+
+        if now - self.last_connect_nbr_time < self.CONNECT_NBR_COOLDOWN:
+            return False
+
+        self.queue_command("Connect_nbr")
+        self.last_connect_nbr_time = now
+        return True
+
+    def _invalidate_data(self):
+        self.inventory_fresh = False
+        self.vision_fresh = False
+
+    def think_pillar(self):
+        current_food = self.inventory.get("food", 0)
+
+        if self._refresh_connect_nbr_if_needed():
+            return
+
+        if self._connected_drone_estimate() < self.TARGET_DRONES:
+            self._grow_team(current_food)
+            return
+
+        self._broadcast_pillar_position()
+        self._broadcast_inventory()
+
+        if current_food >= self.PILLAR_MIN_FOOD_TO_FORK_AFTER_TARGET and self.available_slots <= 0:
+            self.queue_command("Fork")
+            return
+
+        if not self._pillar_has_enough_food_for_group():
+            self._call_food_suppliers()
+            return
+
+        if not self._tile_has_elevation_stones():
+            self._call_stone_collectors()
+            return
+
+        if not self._enough_players_on_tile_for_elevation():
+            self._call_all_drones()
+            return
+
+        self._prepare_elevation_from_tile()
+
+    def _grow_team(self, current_food):
+        if self.available_slots > 0:
+            if current_food < self.PILLAR_MIN_FOOD_TO_FORK:
+                self._search_food_behavior()
+                return
+
+            self._broadcast_pillar_position()
+            return
+
+        if current_food >= self.PILLAR_MIN_FOOD_TO_FORK:
+            self.queue_command("Fork")
+            return
+
+        self._search_food_behavior()
+
+    def _connected_drone_estimate(self):
+        return max(1, self.initial_team_capacity - self.available_slots)
+
+    def _pillar_has_enough_food_for_group(self):
+        players_on_tile = self._players_on_current_tile()
+        required_food = self.PILLAR_FOOD_RESERVE + players_on_tile * self.PILLAR_FOOD_PER_DRONE
+        return self.inventory.get("food", 0) >= required_food
+
+    def _pillar_feed_drone(self):
+        now = time.time()
+
+        if now - self.last_food_drop < self.PILLAR_FEED_COOLDOWN:
+            return
+
+        if self.inventory.get("food", 0) <= self.PILLAR_MIN_FOOD_TO_GIVE:
+            return
+
+        self.queue_command("Set food")
+        self.last_food_drop = now
+
+
+    def think_food_supplier(self):
+        if self._take_food_on_current_tile_if_needed():
             return
 
         current_food = self.inventory.get("food", 0)
 
-        if current_food < self.food_threshold:
-            self.state = DroneState.SEARCH_FOOD
-        elif self.state == DroneState.JOIN_ELEVATION:
-            pass
-        elif self._is_ready_for_elevation() or self._team_elevation():
-            self.state = DroneState.ELEVATE
-        elif current_food > 35 and self.level < 8 and (time.time() - self.last_fork_time) > self.FORK_COOLDOWN:
-            self.state = DroneState.FORK
-        else:
-            self.state = DroneState.SEARCH_STONES
+        if self.pillar_direction == 0 and current_food > self.DRONE_MIN_FOOD_ON_PILLAR:
+            self._drop_food_on_pillar()
+            return
 
-        if self.state == DroneState.SEARCH_FOOD:
-            for index, tile in enumerate(self.vision):
-                if "food" in tile:
-                    self.move_to_target(index)
-                    self.queue_command("Take food")
-                    break
-            else:
-                self.queue_command("Forward")
-        elif self.state == DroneState.SEARCH_STONES:
-            missing = self._missing_stones()
-            if not missing:
-                self.queue_command("Forward")
-            else:
-                found = False
-                for index, tile in enumerate(self.vision):
-                    for stone in missing:
-                        if stone in tile:
-                            self.move_to_target(index)
-                            self.queue_command(f"Take {stone}")
-                            found = True
-                            break
-                    if found:
-                        break
-                if not found:
-                    self.queue_command("Forward")
-                    self.queue_command("Left")
-        elif self.state == DroneState.FORK:
-            self.queue_command("Fork")
-            self.last_fork_time = time.time()
-            self.state = DroneState.SEARCH_FOOD
-        elif self.state == DroneState.ELEVATE:
-            req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-            if not req:
+        if current_food < self.FOOD_SUPPLIER_RETURN_FOOD:
+            self._search_food_behavior()
+            return
+
+        if self.pillar_direction is not None:
+            self._go_to_pillar(self.pillar_direction)
+            return
+
+        self._search_food_behavior()
+
+    def think_stone_collector(self):
+        if self._take_food_on_current_tile_if_needed():
+            return
+
+        current_food = self.inventory.get("food", 0)
+
+        if self.pillar_direction == 0:
+            self._drop_stones_on_pillar()
+            return
+
+        if current_food < self.STONE_COLLECTOR_MIN_FOOD:
+            self._search_food_behavior()
+            return
+
+        self._search_stones_behavior()
+
+    def _go_to_pillar(self, direction):
+        self.command_queue.clear()
+
+        if direction == 0:
+            if self.inventory.get("food", 0) < self.DRONE_MIN_FOOD_ON_PILLAR:
+                self._ask_pillar_for_food()
+                self.waiting_food_on_pillar = True
                 return
 
-            players_on_tile = self.vision[0].count("player") if self.vision else 0
+            if self.role == self.ROLE_STONE:
+                self._drop_stones_on_pillar()
+                return
 
-            if players_on_tile < req[0]:
-                if self.broadcast.can_announce():
-                    payload = {
-                        "players": players_on_tile,
-                        "required": req[0],
-                        "food": self.inventory.get("food", 0),
-                        "missing": self._missing_stones(),
-                        "leader_inventory": self.inventory,
-                    }
-                    self.queue_command(
-                        f"Broadcast {self.broadcast.build_elevation_packet(self.level + 1, payload)}"
-                    )
-            else:
-                for i, stone in enumerate(self.STONES):
-                    for _ in range(req[i + 1]):
-                        self.queue_command(f"Set {stone}")
-                self.queue_command("Incantation")
+            if self.role == self.ROLE_FOOD:
+                self._drop_food_on_pillar()
+                return
 
-        self.inventory_fresh = False
-        self.vision_fresh = False
+        self._move_to_sound(direction)
+
+    def _ask_pillar_for_food(self):
+        current_food = self.inventory.get("food", 0)
+        self.queue_command(f"Broadcast {self.team_name}|DRONE|NEED_FOOD|{self.drone_id}|{current_food}")
+
+    def _take_food_on_current_tile_if_needed(self):
+        if not self.waiting_food_on_pillar:
+            return False
+
+        if not self.vision:
+            self.queue_command("Look")
+            return True
+
+        if "food" in self.vision[0]:
+            self.queue_command("Take food")
+            self.waiting_food_on_pillar = False
+            return True
+
+        self._ask_pillar_for_food()
+        return True
+
+    def _drop_food_on_pillar(self):
+        if self.inventory.get("food", 0) <= self.DRONE_MIN_FOOD_ON_PILLAR:
+            self._ask_pillar_for_food()
+            self.waiting_food_on_pillar = True
+            return
+
+        self.queue_command("Set food")
+
+    def _drop_stones_on_pillar(self):
+        for stone in self.STONES:
+            if self.inventory.get(stone, 0) > 0:
+                self.queue_command(f"Set {stone}")
+                return
+
+        self.queue_command("Look")
+
+    def _search_food_behavior(self):
+        food_index = self._find_item_in_vision("food")
+
+        if food_index is not None:
+            self.move_to_target(food_index)
+            self.queue_command("Take food")
+            return
+
+        self.queue_command("Forward")
+
+    def _search_stones_behavior(self):
+        missing_stones = self._missing_stones()
+
+        if not missing_stones:
+            self.queue_command("Forward")
+            return
+
+        for stone in missing_stones:
+            stone_index = self._find_item_in_vision(stone)
+
+            if stone_index is not None:
+                self.move_to_target(stone_index)
+                self.queue_command(f"Take {stone}")
+                return
+
+        self.queue_command("Forward")
+        self.queue_command("Left")
+
+    def _find_item_in_vision(self, item_name):
+        for index, tile in enumerate(self.vision):
+            if item_name in tile:
+                return index
+
+        return None
+
+    def _missing_stones(self):
+        requirement = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+
+        if not requirement:
+            return {}
+
+        return {
+            stone: requirement[index + 1] - self.inventory.get(stone, 0)
+            for index, stone in enumerate(self.STONES)
+            if self.inventory.get(stone, 0) < requirement[index + 1]
+        }
+
+    def _tile_has_elevation_stones(self):
+        requirement = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+
+        if not requirement or not self.vision:
+            return False
+
+        current_tile = self.vision[0]
+
+        return all(
+            current_tile.count(stone) + self.inventory.get(stone, 0) >= requirement[index + 1]
+            for index, stone in enumerate(self.STONES)
+        )
+
+    def _enough_players_on_tile_for_elevation(self):
+        requirement = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+
+        if not requirement:
+            return False
+
+        return self._players_on_current_tile() >= requirement[0]
+
+    def _prepare_elevation_from_tile(self):
+        requirement = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+
+        if not requirement or not self.vision:
+            return
+
+        current_tile = self.vision[0]
+
+        for index, stone in enumerate(self.STONES):
+            needed = requirement[index + 1]
+            already_on_tile = current_tile.count(stone)
+            missing_on_tile = max(0, needed - already_on_tile)
+            available = self.inventory.get(stone, 0)
+
+            for _ in range(min(missing_on_tile, available)):
+                self.queue_command(f"Set {stone}")
+
+        self.queue_command("Incantation")
+
+    def _players_on_current_tile(self):
+        if not self.vision:
+            return 1
+
+        return self.vision[0].count("player")
+
+    def move_to_target(self, target_index):
+        if target_index == 0:
+            return
+
+        row = int(math.sqrt(target_index))
+        column = target_index - (row * row) - row
+
+        for _ in range(row):
+            self.queue_command("Forward")
+
+        if column < 0:
+            self.queue_command("Left")
+            for _ in range(abs(column)):
+                self.queue_command("Forward")
+            self.queue_command("Right")
+
+        elif column > 0:
+            self.queue_command("Right")
+            for _ in range(column):
+                self.queue_command("Forward")
+            self.queue_command("Left")
+
+    def _move_to_sound(self, direction):
+        moves_by_direction = {
+            1: ["Forward"],
+            2: ["Forward", "Right", "Forward", "Left"],
+            3: ["Right", "Forward", "Left"],
+            4: ["Right", "Right", "Forward", "Right", "Forward", "Left", "Left"],
+            5: ["Right", "Right", "Forward", "Right", "Right"],
+            6: ["Left", "Left", "Forward", "Left", "Forward", "Right", "Right"],
+            7: ["Left", "Forward", "Right"],
+            8: ["Forward", "Left", "Forward", "Right"],
+        }
+
+        for command in moves_by_direction.get(direction, []):
+            self.queue_command(command)
