@@ -99,14 +99,15 @@ re:     fclean all
 test_gui:
 	${MAKE} --no-print-directory -C ./
 	@set -e; \
-	trap 'kill $$ai_pid $$server_pid 2>/dev/null || true' EXIT; \
+	trap 'kill $$ai1_pid $$ai2_pid $$server_pid 2>/dev/null || true' EXIT; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
 	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
-	./test/zappy_test_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
+	./test/zappy_test_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 2500 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
 	sleep 1; \
-	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binaries...\n"; \
 	$(MAKE) --no-print-directory -C ../AI; \
-	../AI/zappy_ai -p 5252 -n Team1 >test/zappy_ai.log 2>&1 & ai_pid=$$!; \
+	../AI/zappy_ai -p 5252 -n Team1 >test/zappy_ai_team1.log 2>&1 & ai1_pid=$$!; \
+	../AI/zappy_ai -p 5252 -n Team2 >test/zappy_ai_team2.log 2>&1 & ai2_pid=$$!; \
 	sleep 1; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI binary...\n"; \
 	./zappy_gui -h localhost -p 5252
