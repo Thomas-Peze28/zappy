@@ -6,6 +6,7 @@
 */
 
 #include "Hud.hpp"
+#include "Game.hpp"
 #include "Input.hpp"
 
 /**
@@ -154,7 +155,12 @@ void Zappy::Hud::drawTileInventory(int x, int y, const Zappy::Tile &tile) const
     drawResourceInfo("Thystame", Zappy::RESSOURCE::THYSTAME, SKYBLUE);
 }
 
-void Zappy::Hud::drawPlayerInventory(const Zappy::Player &player) const
+/**
+* @brief Draws the inventory for a specific player.
+* @param player The player instance.
+* @param game The game instance.
+**/
+void Zappy::Hud::drawPlayerInventory(const Zappy::Player &player, const Zappy::Game &game) const
 {
     int panelWidth = 250;
     int panelHeight = 350;
@@ -180,7 +186,7 @@ void Zappy::Hud::drawPlayerInventory(const Zappy::Player &player) const
     int spacing = 25;
 
     auto drawResourceInfo = [&](const std::string &name, Zappy::RESSOURCE res, Color color, int row) {
-        std::string line = name + " : " + std::to_string(player.getResource(res));
+        std::string line = name + " : " + std::to_string(player.getResource(res)) + " (" + std::to_string(game.getTeamRessource(player.getTeamName(), res)) + ")";
         DrawText(line.c_str(), startX + 20, textY + spacing * row, fontSize, color);
     };
 

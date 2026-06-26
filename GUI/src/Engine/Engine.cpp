@@ -402,7 +402,7 @@ void Zappy::Engine::render2D(const Zappy::Game &game)
         const auto& players = game.getPlayers();
         auto it = players.find(_selectedPlayerId);
         if (it != players.end()) {
-            _hud.drawPlayerInventory(it->second);
+            _hud.drawPlayerInventory(it->second, game);
         } else {
             _selectedPlayerId = -1;
         }

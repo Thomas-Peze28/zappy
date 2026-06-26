@@ -19,6 +19,8 @@
 
 namespace Zappy
 {
+    class Game;
+
     class Hud {
         public:
             Hud();
@@ -31,7 +33,7 @@ namespace Zappy
             void toggleOpen();
             void setOpening(bool open);
             void drawTileInventory(int x, int y, const class Tile &tile) const;
-            void drawPlayerInventory(const Player &player) const;
+            void drawPlayerInventory(const Player &player, const Game &game) const;
 
         protected:
         private:
