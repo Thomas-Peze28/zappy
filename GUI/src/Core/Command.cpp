@@ -123,7 +123,7 @@ int Zappy::Core::tna(std::string message, Zappy::Game &game, Zappy::Network &ser
     if (sscanf(message.c_str(), "tna %127s", teamName) == 1) {
         std::string teamNameStr(teamName);
         game.addNotification("New team: " + teamNameStr);
-//         TODO: Ajoute teamName à la liste des équipes et y assigner une couleur
+        // TODO: Ajoute teamName à la liste des équipes et y assigner une couleur
     }
     return 0;
 }
@@ -175,7 +175,6 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
     if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4) {
         direction = static_cast<Direction>(d);
         if (game.getPlayer(p_nbr).getX() != x || game.getPlayer(p_nbr).getY() != y || game.getPlayer(p_nbr).getDirection() != direction) {
-            // TODO: Joue une animation de déplacement pour le joueur p_nbr
             game.getPlayer(p_nbr).setPosition(x, y, direction);
         }
     }
