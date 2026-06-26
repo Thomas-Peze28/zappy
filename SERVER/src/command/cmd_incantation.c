@@ -86,4 +86,5 @@ void cmd_incantation(server_t *server, client_t *client)
     consume_resources(tile, req);
     elevate_players_on_tile(server, client);
     gui_notify_pie(server, client, 1);
+    check_end_game(server);
 }

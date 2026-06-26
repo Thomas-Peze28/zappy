@@ -44,7 +44,8 @@ SRC     =   src/main.c                      \
 			src/gui/notify_egg.c \
 			src/gui/notify_player.c \
 			src/gui/team.c \
-			src/gui/time.c
+			src/gui/time.c \
+			src/server/end_game.c
 
 OBJ     =   $(SRC:.c=.o)
 

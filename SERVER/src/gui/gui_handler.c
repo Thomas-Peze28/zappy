@@ -8,6 +8,19 @@
 #include "gui.h"
 #include <string.h>
 
+static const gui_cmd_t GUI_COMMANDS[] = {
+    {"msz", dispatch_msz},
+    {"mct", dispatch_mct},
+    {"tna", dispatch_tna},
+    {"sgt", dispatch_sgt},
+    {"bct", handle_bct_cmd},
+    {"ppo", handle_ppo_cmd},
+    {"plv", handle_plv_cmd},
+    {"pin", handle_pin_cmd},
+    {"sst", handle_sst_cmd},
+    {NULL, NULL}
+};
+
 void dispatch_msz(server_t *server, client_t *gui, char *line)
 {
     (void)line;
@@ -31,19 +44,6 @@ void dispatch_sgt(server_t *server, client_t *gui, char *line)
     (void)line;
     gui_send_sgt(server, gui);
 }
-
-static const gui_cmd_t GUI_COMMANDS[] = {
-    {"msz", dispatch_msz},
-    {"mct", dispatch_mct},
-    {"tna", dispatch_tna},
-    {"sgt", dispatch_sgt},
-    {"bct", handle_bct_cmd},
-    {"ppo", handle_ppo_cmd},
-    {"plv", handle_plv_cmd},
-    {"pin", handle_pin_cmd},
-    {"sst", handle_sst_cmd},
-    {NULL, NULL}
-};
 
 static int route_gui_command(server_t *server, client_t *gui, char *line)
 {
