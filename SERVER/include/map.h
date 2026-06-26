@@ -8,8 +8,7 @@
 #ifndef MAP_H
     #define MAP_H
 
-typedef struct tile_s
-{
+typedef struct tile_s {
     int food;
     int linemate;
     int deraumere;
@@ -19,8 +18,7 @@ typedef struct tile_s
     int thystame;
 } tile_t;
 
-typedef struct map_s
-{
+typedef struct map_s {
     int width;
     int height;
 

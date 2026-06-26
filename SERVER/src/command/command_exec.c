@@ -14,7 +14,8 @@ int command_ready(command_t *cmd)
     return (get_time_ms() >= cmd->execute_at);
 }
 
-static int execute_ai_interactions(server_t *srv, client_t *cl, const char *cmd)
+static int execute_ai_interactions(server_t *srv, client_t *cl,
+    const char *cmd)
 {
     const char *cmds[] = {"Look", "Incantation", "Fork", NULL};
     void (*funcs[])(server_t *, client_t *) = {cmd_look, cmd_incantation,

@@ -38,7 +38,7 @@ void gui_notify_pbc(server_t *server, client_t *player,
 void gui_notify_pic(server_t *server, client_t *player)
 {
     char buf[MAX_CMD_LEN];
-    /* TODO: lister tous les joueurs participant à l'incantation */
+
     snprintf(buf, MAX_CMD_LEN, "pic %d %d %d #%d\n",
         player->pos_x, player->pos_y, player->level, player->id);
     send_to_all_gui(server, buf);
