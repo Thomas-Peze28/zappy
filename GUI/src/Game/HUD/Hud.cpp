@@ -213,9 +213,13 @@ void Zappy::Hud::drawWinningTeam(const std::string &teamName) const
 	Zappy::Shape3D::drawRectangle(startX, startY, panelWidth, panelHeight, Fade(BLACK, 0.8f));
 	Zappy::Shape3D::drawRectangleLines(startX, startY, panelWidth, panelHeight, WHITE);
 
-	std::string title = "=== GAME OVER ===";
-	DrawText(title.c_str(), startX + 20, startY + 20, 30, RED);
+	std::string title = "=== FINISH ===";
+	DrawText(title.c_str(), startX + 100, startY + 20, 30, RED);
 
-	std::string message = "Winning Team: " + teamName;
-	DrawText(message.c_str(), startX + 20, startY + 80, 24, YELLOW);
+	std::string subTitle = "Winning Team";
+	DrawText(subTitle.c_str(), startX + 130, startY + 80, 24, YELLOW);
+
+	std::string teamMessage = "\"" + teamName + "\"";
+	int teamMessageWidth = MeasureText(teamMessage.c_str(), 22);
+	DrawText(teamMessage.c_str(), startX + (panelWidth - teamMessageWidth) / 2, startY + 120, 22, YELLOW);
 }
