@@ -174,6 +174,8 @@ int Zappy::Core::ppo(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     (void)server;
     if (sscanf(message.c_str(), "ppo #%d %d %d %d", &p_nbr, &x, &y, &d) == 4) {
+        if (!game.hasPlayer(p_nbr))
+            return 0;
         direction = static_cast<Direction>(d);
         if (game.getPlayer(p_nbr).getX() != x || game.getPlayer(p_nbr).getY() != y || game.getPlayer(p_nbr).getDirection() != direction) {
             game.getPlayer(p_nbr).setPosition(x, y, direction);
@@ -197,6 +199,8 @@ int Zappy::Core::plv(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     (void)server;
     if (sscanf(message.c_str(), "plv #%d %d", &p_nbr, &l) == 2) {
+        if (!game.hasPlayer(p_nbr))
+            return 0;
         if (l != game.getPlayer(p_nbr).getLevel()) {
             // TODO: Joue une animation de level up pour le joueur p_nbr
             game.getPlayer(p_nbr).setLevel(l);
@@ -228,8 +232,11 @@ int Zappy::Core::pin(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %d", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6) == 10)
-        game.getPlayer(p_nbr).setInventory(q0, q1, q2, q3, q4, q5, q6);
+    if (sscanf(message.c_str(), "pin #%d %d %d %d %d %d %d %d %d %d", &p_nbr, &x, &y, &q0, &q1, &q2, &q3, &q4, &q5, &q6) == 10) {
+        if (game.hasPlayer(p_nbr)) {
+            game.getPlayer(p_nbr).setInventory(q0, q1, q2, q3, q4, q5, q6);
+        }
+    }
     return 0;
 }
 
@@ -246,9 +253,12 @@ int Zappy::Core::pex(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "pex #%d", &p_nbr) == 1)
-    // TODO: Joue une animation d'expulsion pour le joueur p_nbr
-        server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
+    if (sscanf(message.c_str(), "pex #%d", &p_nbr) == 1) {
+        if (game.hasPlayer(p_nbr)) {
+            // TODO: Joue une animation d'expulsion pour le joueur p_nbr
+            server.sendMessage("ppo #" + std::to_string(p_nbr) + "\n");
+        }
+    }
     return 0;
 }
 
@@ -274,7 +284,9 @@ int Zappy::Core::pbc(std::string message, Zappy::Game &game, Zappy::Network &ser
 
         printf("Player %d broadcasted a message : %s\n", p_nbr, msg.c_str());
         game.addNotification("Player #" + std::to_string(p_nbr) + " broadcasted a message");
-        game.getPlayer(p_nbr).startBroadcast();
+        if (game.hasPlayer(p_nbr)) {
+            game.getPlayer(p_nbr).startBroadcast();
+        }
     }
     return 0;
 }
@@ -297,8 +309,11 @@ int Zappy::Core::pic(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     (void)server;
     (void)message;
-    if (sscanf(message.c_str(), "pic %d %d %d #%d", &x, &y, &l, &p_nbr))
-        game.getPlayer(p_nbr).startIncantation();
+    if (sscanf(message.c_str(), "pic %d %d %d #%d", &x, &y, &l, &p_nbr) == 4) {
+        if (game.hasPlayer(p_nbr)) {
+            game.getPlayer(p_nbr).startIncantation();
+        }
+    }
     return 0;
 }
 

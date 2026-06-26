@@ -33,6 +33,7 @@ namespace Zappy
             void addPlayer(const Player& player);
             void removePlayer(int id);
             Player &getPlayer(int id);
+            bool hasPlayer(int id) const;
             const std::unordered_map<int, Player> &getPlayers() const;
             void addNotification(const std::string &message);
             const std::vector<std::string> &getNotifications() const;

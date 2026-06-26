@@ -201,3 +201,13 @@ void Zappy::Game::setGameOver(bool gameOver)
 {
     _gameOver = gameOver;
 }
+
+/**
+* @brief Checks if a player exists in the game.
+* @param id The ID of the player to check.
+* @return True if the player exists, false otherwise.
+**/
+bool Zappy::Game::hasPlayer(int id) const
+{
+    return _players.find(id) != _players.end();
+}
