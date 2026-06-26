@@ -47,18 +47,20 @@ fclean: clean
 	rm -f zappy_server zappy_ai zappy_gui
 	@printf "$(YELLOW)[INFO]$(RESET) Binaries removed.\n"
 
-run:
-	$(MAKE) --no-print-directory -C ./
-	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
-	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
-	./zappy_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 2>&1 & server_pid=$$!; \
+run: all
+	@set -e; \
+	trap 'kill $$ai_pid $$server_pid 2>/dev/null || true' EXIT INT TERM; \
+	printf "$(MAGENTA)[TEST]$(RESET) Launching test environment...\n"; \
+	printf "$(MAGENTA)[TEST]$(RESET) Run server on port $(BOLD)5252$(RESET)...\n"; \
+	./zappy_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 > server.log 2>&1 & server_pid=$$!; \
 	sleep 1; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
-	./zappy_ai -p 5252 -n Team1 2>&1 & ai_pid=$$!; \
+	./zappy_ai -p 5252 -n Team1 > ai.log 2>&1 & ai_pid=$$!; \
 	sleep 1; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI binary...\n"; \
-	./zappy_gui -h localhost -p 5252
-	${MAKE} --no-print-directory -C ./ fclean
+	./zappy_gui -h localhost -p 5252; \
+	$(MAKE) --no-print-directory fclean; \
+	rm -f server.log ai.log
 
 re: fclean all
 	@printf "$(BLUE)[INFO]$(RESET) Project rebuilt successfully.\n"
