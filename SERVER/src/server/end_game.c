@@ -27,8 +27,7 @@ static int count_level8_in_team(server_t *server, const char *team)
 static const char *find_winning_team(server_t *server)
 {
     for (int i = 0; i < server->config.team_count; i++) {
-        if (count_level8_in_team(server,
-            server->config.team_names[i]) >= 6)
+        if (count_level8_in_team(server, server->config.team_names[i]) >= 6)
             return server->config.team_names[i];
     }
     return NULL;
