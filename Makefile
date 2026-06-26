@@ -51,10 +51,10 @@ run:
 	$(MAKE) --no-print-directory -C ./
 	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI tests...\n"; \
 	printf "$(MAGENTA)[TEST]$(RESET) Run test server on port $(BOLD)5252$(RESET)...\n"; \
-	./zappy_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 >test/zappy_test_server.log 2>&1 & server_pid=$$!; \
+	./zappy_server -p 5252 -x 10 -y 10 -n Team1 Team2 -c 10 -f 10 2>&1 & server_pid=$$!; \
 	sleep 1; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching AI binary...\n"; \
-	./zappy_ai -p 5252 -n Team1 >test/zappy_ai.log 2>&1 & ai_pid=$$!; \
+	./zappy_ai -p 5252 -n Team1 2>&1 & ai_pid=$$!; \
 	sleep 1; \
 	printf "$(MAGENTA)[TEST]$(RESET) Launching GUI binary...\n"; \
 	./zappy_gui -h localhost -p 5252
