@@ -39,3 +39,12 @@ void gui_notify_seg(server_t *server, const char *team)
     snprintf(buf, MAX_CMD_LEN, "seg %s\n", team);
     send_to_all_gui(server, buf);
 }
+
+void gui_notify_plv(server_t *server, client_t *player)
+{
+    char buf[MAX_CMD_LEN];
+
+    snprintf(buf, MAX_CMD_LEN, "plv #%d %d\n",
+        player->id, player->level);
+    send_to_all_gui(server, buf);
+}
