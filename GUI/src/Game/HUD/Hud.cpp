@@ -154,24 +154,41 @@ void Zappy::Hud::drawTileInventory(int x, int y, const Zappy::Tile &tile) const
     drawResourceInfo("Thystame", Zappy::RESSOURCE::THYSTAME, SKYBLUE);
 }
 
-// TODO: essayer de fix le toggle bar au moment du passage en fullscreen
+void Zappy::Hud::drawPlayerInventory(const Zappy::Player &player) const
+{
+    int panelWidth = 250;
+    int panelHeight = 350;
+    int startX = GetScreenWidth() - panelWidth - 10;
+    int startY = 40;
 
-// void Zappy::Hud::setPanelWidth(float width)
-// {
-//     _panelWidth = width;
-// }
+    Zappy::Shape3D::drawRectangle(startX, startY, panelWidth, panelHeight, Fade(DARKBLUE, 0.7f));
+    Zappy::Shape3D::drawRectangleLines(startX, startY, panelWidth, panelHeight, SKYBLUE);
 
-// void Zappy::Hud::setButtonRectX(const Rectangle &rect)
-// {
-//     _buttonRect.x = rect.x;
-// }
+    std::string title = "Player #" + std::to_string(player.getId());
+	DrawText(title.c_str(), startX + 20, startY + 20, 22, YELLOW);
 
-// void Zappy::Hud::setCurrentX(const Rectangle &rect)
-// {
-//     _currentX = rect.x;
-// }
+    int textY = startY + 60;
+    DrawText(("Team: " + player.getTeamName()).c_str(), startX + 20, textY, 18, WHITE);
+    textY += 25;
+    DrawText(("Level: " + std::to_string(player.getLevel())).c_str(), startX + 20, textY, 18, WHITE);
+    textY += 35;
 
-// const Rectangle &Zappy::Hud::getButtonRect(void) const
-// {
-//     return _buttonRect;
-// }
+    DrawText("--- Inventory ---", startX + 20, textY, 18, LIGHTGRAY);
+    textY += 30;
+
+    int fontSize = 20;
+    int spacing = 25;
+
+    auto drawResourceInfo = [&](const std::string &name, Zappy::RESSOURCE res, Color color, int row) {
+        std::string line = name + " : " + std::to_string(player.getResource(res));
+        DrawText(line.c_str(), startX + 20, textY + spacing * row, fontSize, color);
+    };
+
+    drawResourceInfo("Food", Zappy::RESSOURCE::FOOD, ORANGE, 0);
+    drawResourceInfo("Linemate", Zappy::RESSOURCE::LINEMATE, PURPLE, 1);
+    drawResourceInfo("Deraumere", Zappy::RESSOURCE::DERAUMERE, BLUE, 2);
+    drawResourceInfo("Sibur", Zappy::RESSOURCE::SIBUR, GREEN, 3);
+    drawResourceInfo("Mendiane", Zappy::RESSOURCE::MENDIANE, RED, 4);
+    drawResourceInfo("Phiras", Zappy::RESSOURCE::PHIRAS, GOLD, 5);
+    drawResourceInfo("Thystame", Zappy::RESSOURCE::THYSTAME, SKYBLUE, 6);
+}

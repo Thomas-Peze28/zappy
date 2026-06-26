@@ -15,6 +15,7 @@
 
 #include "Tile.hpp"
 #include "Shape3D.hpp"
+#include "Player.hpp"
 
 namespace Zappy
 {
@@ -30,13 +31,7 @@ namespace Zappy
             void toggleOpen();
             void setOpening(bool open);
             void drawTileInventory(int x, int y, const class Tile &tile) const;
-
-
-            // TODO: essayer de fix le toggle bar au moment du passage en fullscreen
-            // void setPanelWidth(float width);
-            // void setButtonRectX(const Rectangle &rect);
-            // void setCurrentX(const Rectangle &rect);
-            // const Rectangle &getButtonRect(void) const;
+            void drawPlayerInventory(const Player &player) const;
 
         protected:
         private:
