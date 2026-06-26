@@ -6,6 +6,7 @@
 */
 
 #include "command.h"
+#include "gui.h"
 
 void cmd_forward(server_t *server, client_t *client)
 {
@@ -19,5 +20,6 @@ void cmd_forward(server_t *server, client_t *client)
     if (client->orientation == WEST)
         client->pos_x = (client->pos_x - 1 + server->config.width)
             % server->config.width;
+    gui_notify_ppo(server, client);
     send_to_client(client, "ok\n");
 }
