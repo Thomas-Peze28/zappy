@@ -198,3 +198,24 @@ void Zappy::Hud::drawPlayerInventory(const Zappy::Player &player, const Zappy::G
     drawResourceInfo("Phiras", Zappy::RESSOURCE::PHIRAS, GOLD, 5);
     drawResourceInfo("Thystame", Zappy::RESSOURCE::THYSTAME, SKYBLUE, 6);
 }
+
+/**
+* @brief Draws the winning team message.
+* @param teamName The name of the winning team.
+**/
+void Zappy::Hud::drawWinningTeam(const std::string &teamName) const
+{
+	int panelWidth = 400;
+	int panelHeight = 200;
+	int startX = (GetScreenWidth() - panelWidth) / 2;
+	int startY = (GetScreenHeight() - panelHeight) / 2;
+
+	Zappy::Shape3D::drawRectangle(startX, startY, panelWidth, panelHeight, Fade(BLACK, 0.8f));
+	Zappy::Shape3D::drawRectangleLines(startX, startY, panelWidth, panelHeight, WHITE);
+
+	std::string title = "=== GAME OVER ===";
+	DrawText(title.c_str(), startX + 20, startY + 20, 30, RED);
+
+	std::string message = "Winning Team: " + teamName;
+	DrawText(message.c_str(), startX + 20, startY + 80, 24, YELLOW);
+}

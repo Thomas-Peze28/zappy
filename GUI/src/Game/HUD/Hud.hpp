@@ -34,6 +34,7 @@ namespace Zappy
             void setOpening(bool open);
             void drawTileInventory(int x, int y, const class Tile &tile) const;
             void drawPlayerInventory(const Player &player, const Game &game) const;
+            void drawWinningTeam(const std::string &teamName) const;
 
         protected:
         private:

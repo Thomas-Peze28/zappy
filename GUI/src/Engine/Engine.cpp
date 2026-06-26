@@ -408,6 +408,10 @@ void Zappy::Engine::render2D(const Zappy::Game &game)
         }
     }
 
+    if (game.isGameOver()) {
+        _hud.drawWinningTeam(game.getWinningTeam());
+    }
+
     _hud.update();
     _hud.setMessages(game.getNotifications());
     _hud.draw();

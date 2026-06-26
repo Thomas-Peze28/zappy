@@ -100,9 +100,10 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
 
     (void)game;
     (void)server;
-    if (sscanf(message.c_str(), "seg %s", teamName.data()) == 1)
-    // TODO: Affiche un message de fin de partie avec le nom de l'équipe gagnante
-        exit(0);
+    if (sscanf(message.c_str(), "seg %s", teamName.data()) == 1) {
+        game.setWinningTeam(teamName);
+        game.setGameOver(true);
+    }
     return 0;
 }
 

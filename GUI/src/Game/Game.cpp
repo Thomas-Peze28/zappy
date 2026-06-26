@@ -11,7 +11,7 @@
 * @brief Constructs a new Game object.
 **/
 Zappy::Game::Game()
-    : _map(0, 0), time_unit(0)
+    : _map(0, 0), time_unit(0), _winningTeam(""), _gameOver(false)
 {
 }
 
@@ -164,4 +164,40 @@ int Zappy::Game::getTeamRessource(const std::string &teamName, RESSOURCE type) c
         }
     }
     return total;
+}
+
+/**
+* @brief Gets the winning team.
+* @return The name of the winning team.
+**/
+std::string Zappy::Game::getWinningTeam() const
+{
+    return _winningTeam;
+}
+
+/**
+* @brief Sets the winning team.
+* @param teamName The name of the winning team.
+**/
+void Zappy::Game::setWinningTeam(const std::string &teamName)
+{
+    _winningTeam = teamName;
+}
+
+/**
+* @brief Checks if the game is over.
+* @return True if the game is over, false otherwise.
+**/
+bool Zappy::Game::isGameOver() const
+{
+    return _gameOver;
+}
+
+/**
+* @brief Sets the game over status.
+* @param gameOver The new game over status.
+**/
+void Zappy::Game::setGameOver(bool gameOver)
+{
+    _gameOver = gameOver;
 }

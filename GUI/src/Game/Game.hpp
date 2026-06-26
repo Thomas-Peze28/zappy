@@ -48,6 +48,11 @@ namespace Zappy
             void update(float deltaTime);
 
             int getTeamRessource(const std::string &teamName, RESSOURCE type) const;
+
+            std::string getWinningTeam() const;
+            void setWinningTeam(const std::string &teamName);
+            bool isGameOver() const;
+            void setGameOver(bool gameOver);
         
         private:
             Map _map;
@@ -56,5 +61,9 @@ namespace Zappy
             std::vector<std::string> _notifications;
 
             int time_unit;
+
+            std::string _winningTeam;
+            bool _gameOver;
+
     };
 };
