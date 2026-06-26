@@ -7,7 +7,7 @@
 
 NAME    =   zappy_server
 
-CC      =   epiclang
+CC      =  	epiclang
 CFLAGS  =   -Wall -Wextra -Werror
 IFLAGS  =   -I include
 

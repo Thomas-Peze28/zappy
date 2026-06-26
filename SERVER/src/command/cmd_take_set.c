@@ -6,7 +6,20 @@
 */
 
 #include "command.h"
+#include "gui.h"
 #include <string.h>
+
+static int get_res_id(const char *res)
+{
+    const char *names[] = {"food", "linemate", "deraumere", "sibur",
+        "mendiane", "phiras", "thystame"};
+
+    for (int i = 0; i < 7; i++) {
+        if (strcmp(res, names[i]) == 0)
+            return i;
+    }
+    return -1;
+}
 
 static int *get_resource_ptr_tile(tile_t *tile, const char *res)
 {
@@ -51,11 +64,14 @@ void cmd_take(server_t *server, client_t *client, const char *arg)
     tile_t *tile = &server->map->tiles[client->pos_y][client->pos_x];
     int *tile_res = get_resource_ptr_tile(tile, arg);
     int *player_res = get_resource_ptr_player(client, arg);
+    int res_id = get_res_id(arg);
 
     if (tile_res && player_res && *tile_res > 0) {
         (*tile_res)--;
         (*player_res)++;
         send_to_client(client, "ok\n");
+        if (res_id != -1)
+            gui_notify_pgt(server, client, res_id);
     } else {
         send_to_client(client, "ko\n");
     }
@@ -71,6 +87,7 @@ void cmd_set(server_t *server, client_t *client, const char *arg)
         (*player_res)--;
         (*tile_res)++;
         send_to_client(client, "ok\n");
+        gui_notify_pdr(server, client, get_res_id(arg));
     } else {
         send_to_client(client, "ko\n");
     }

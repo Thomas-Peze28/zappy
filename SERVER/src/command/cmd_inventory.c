@@ -15,8 +15,7 @@ void cmd_inventory(server_t *server, client_t *client)
     (void)server;
     snprintf(buf, sizeof(buf),
         "[food %d, linemate %d, deraumere %d, sibur %d, "
-        "mendiane %d, phiras %d, thystame %d]\n",
-        client->inventory.food,
+        "mendiane %d, phiras %d, thystame %d]\n", client->inventory.food,
         client->inventory.linemate,
         client->inventory.deraumere,
         client->inventory.sibur,

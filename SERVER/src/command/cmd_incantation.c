@@ -9,7 +9,7 @@
 #include "gui.h"
 #include <stdio.h>
 
-static int check_tile_resources(tile_t *tile, const incantation_req_t *req)
+int check_tile_resources(tile_t *tile, const incantation_req_t *req)
 {
     if (tile->linemate < req->linemate || tile->deraumere < req->deraumere)
         return 0;
@@ -20,7 +20,7 @@ static int check_tile_resources(tile_t *tile, const incantation_req_t *req)
     return 1;
 }
 
-static int count_players_on_tile(server_t *server, client_t *client)
+int count_players_on_tile(server_t *server, client_t *client)
 {
     int count = 0;
 
@@ -70,19 +70,14 @@ static void elevate_players_on_tile(server_t *server, client_t *client)
 void cmd_incantation(server_t *server, client_t *client)
 {
     tile_t *tile = &server->map->tiles[client->pos_y][client->pos_x];
-    const incantation_req_t *req;
+    const incantation_req_t *req = &REQS[client->level - 1];
     int p_count = count_players_on_tile(server, client);
 
-    if (client->level < 1 || client->level > 7) {
-        send_to_client(client, "ko\n");
-        return;
-    }
-    req = &REQS[client->level - 1];
     if (p_count < req->players || !check_tile_resources(tile, req)) {
         send_to_client(client, "ko\n");
+        gui_notify_pie(server, client, 0);
         return;
     }
-    gui_notify_pic(server, client);
     consume_resources(tile, req);
     elevate_players_on_tile(server, client);
     gui_notify_pie(server, client, 1);

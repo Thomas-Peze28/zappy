@@ -43,6 +43,8 @@ int queue_command(client_t *client,
 void pop_command(client_t *client);
 void update_game(server_t *server);
 int command_ready(command_t *cmd);
+int count_players_on_tile(server_t *server, client_t *client);
+int check_tile_resources(tile_t *tile, const incantation_req_t *req);
 
 void cmd_forward(server_t *server, client_t *client);
 void cmd_right(server_t *server, client_t *client);

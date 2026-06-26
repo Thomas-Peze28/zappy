@@ -12,6 +12,8 @@
 #include <time.h>
 #include "timer.h"
 #include "gui.h"
+#include "command.h"
+#include <unistd.h>
 
 int find_team(server_config_t *config, const char *name)
 {
@@ -27,8 +29,9 @@ void send_to_client(client_t *client, const char *msg)
     int len = strlen(msg);
     int available = BUFFER_SIZE - client->write_len;
 
-    if (len > available)
+    if (len > available) {
         return;
+    }
     memcpy(client->write_buf + client->write_len, msg, len);
     client->write_len += len;
 }
@@ -46,10 +49,12 @@ int get_team_slots(server_t *server, const char *team)
 
 static void handle_gui(server_t *server, int idx)
 {
-    server->clients[idx].type = CLIENT_GUI;
-    strncpy(server->clients[idx].team_name, "GRAPHIC",
-        TEAM_NAME_LEN - 1);
-    send_to_client(&server->clients[idx], "ok\n");
+    client_t *gui = &server->clients[idx];
+
+    gui->type = CLIENT_GUI;
+    strncpy(gui->team_name, "GRAPHIC", TEAM_NAME_LEN - 1);
+    gui_send_msz(server, gui);
+    gui_send_mct(server, gui);
 }
 
 static void send_ai_info(server_t *server, int idx, const char *team)

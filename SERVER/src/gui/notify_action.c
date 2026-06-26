@@ -12,7 +12,9 @@ void gui_notify_pdr(server_t *server, client_t *player, int resource)
 {
     char buf[MAX_CMD_LEN];
 
-    snprintf(buf, MAX_CMD_LEN, "pdr #%d %d\n", player->id, resource);
+    if (resource < 0 || resource > 6)
+        return;
+    snprintf(buf, MAX_CMD_LEN, "pdr %d %d\n", player->id, resource);
     send_to_all_gui(server, buf);
 }
 
@@ -20,7 +22,9 @@ void gui_notify_pgt(server_t *server, client_t *player, int resource)
 {
     char buf[MAX_CMD_LEN];
 
-    snprintf(buf, MAX_CMD_LEN, "pgt #%d %d\n", player->id, resource);
+    if (resource < 0 || resource > 6)
+        return;
+    snprintf(buf, MAX_CMD_LEN, "pgt %d %d\n", player->id, resource);
     send_to_all_gui(server, buf);
 }
 
