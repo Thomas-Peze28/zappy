@@ -60,6 +60,8 @@ namespace Zappy
             void renderWireSphereAnimation(Vector3 position, Color color, float radius, float speed) const;
 
             void nextCameraMode();
+
+            void get_map_content(Zappy::Game &game, Zappy::Network &server);
         
         private:
             void render3D(const Zappy::Game &game);

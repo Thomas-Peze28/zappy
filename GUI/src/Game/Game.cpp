@@ -45,7 +45,7 @@ void Zappy::Game::addPlayer(const Player& player)
 void Zappy::Game::addNotification(const std::string &message)
 {
     _notifications.push_back(message);
-    if (_notifications.size() > 5)
+    if (_notifications.size() > 20)
         _notifications.erase(_notifications.begin());
 }
 

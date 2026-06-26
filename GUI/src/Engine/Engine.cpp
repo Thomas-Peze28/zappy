@@ -113,26 +113,16 @@ void Zappy::Engine::nextCameraMode()
 int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
 {
     if (Zappy::Input::isKeyPressed(KEY_ESCAPE))
-    {
         return 1;
-    }
-
     if (Zappy::Input::isKeyPressed(KEY_SPACE))
-    {
         _sound.play();
-    }
-
-    if (Zappy::Input::isKeyPressed(KEY_F))
-    {
+    if (Zappy::Input::isKeyPressed(KEY_F)) {
         _window.toggleFullscreen();
         _hud.toggleOpen();
     }
 
     if (Zappy::Input::isKeyPressed(KEY_C))
-    {
         nextCameraMode();
-    }
-
     if (Zappy::Input::isKeyPressed(KEY_P))
     {
         if (_music.isPlaying())
@@ -140,30 +130,24 @@ int Zappy::Engine::handleInputs(Zappy::Game &game, Zappy::Network &server)
         else
             _music.play();
     }
-
     if (Zappy::Input::isKeyPressed(KEY_O))
     {
         int newTime = game.getTimeUnit() + 10;
         
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
-
     if (Zappy::Input::isKeyPressed(KEY_I))
     {
         int newTime = game.getTimeUnit() - 10;
-        
         if (newTime <= 0) {
             newTime = 2;
         }
-        
         server.sendMessage("sst " + std::to_string(newTime) + "\n");
     }
-
     if (Zappy::Input::isKeyPressed(KEY_L))
-    {
         _hud.toggleOpen();
-    }
-
+    if (Zappy::Input::isKeyPressed(KEY_SPACE))
+        get_map_content(game, server);
     handleMouseSelection(game);
     return 0;
 }
@@ -490,4 +474,40 @@ void Zappy::Engine::handleMouseSelection(const Zappy::Game &game)
             }
         }
     }
+}
+
+/**
+* Retrieves the content of the map from the server and adds a notification with the total resources on the map.
+* @param game The game instance.
+* @param server The network instance.
+**/
+void Zappy::Engine::get_map_content(Zappy::Game &game, Zappy::Network &server)
+{
+    int q0 = 0;
+    int q1 = 0;
+    int q2 = 0;
+    int q3 = 0;
+    int q4 = 0;
+    int q5 = 0;
+    int q6 = 0;
+    server.sendMessage("mct\n");
+    for (int i = 0; i < game.getMap().getWidth(); i++) {
+        for (int j = 0; j < game.getMap().getHeight(); j++) {
+            q0 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::FOOD);
+            q1 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::LINEMATE);
+            q2 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::DERAUMERE);
+            q3 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::SIBUR);
+            q4 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::MENDIANE);
+            q5 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::PHIRAS);
+            q6 += game.getMap().getTile(i, j).getResource(Zappy::RESSOURCE::THYSTAME);
+        }
+    }
+    game.addNotification("Total resources on the map:");
+    game.addNotification("FOOD: " + std::to_string(q0));
+    game.addNotification("LINEMATE: " + std::to_string(q1));
+    game.addNotification("DERAUMERE: " + std::to_string(q2));
+    game.addNotification("SIBUR: " + std::to_string(q3));
+    game.addNotification("MENDIANE: " + std::to_string(q4));
+    game.addNotification("PHIRAS: " + std::to_string(q5));
+    game.addNotification("THYSTAME: " + std::to_string(q6));
 }
