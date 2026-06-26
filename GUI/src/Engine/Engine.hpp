@@ -91,5 +91,6 @@ namespace Zappy
 
             int _selectedX;
             int _selectedY;
+            int _selectedPlayerId;
     };
 };

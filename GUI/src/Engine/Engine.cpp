@@ -67,7 +67,8 @@ Zappy::Engine::Engine(int width, int height, const std::string &title)
             _sound(resolveAssetPath("assets/audio/sound.mp3")),
       _gap(0.3f),
       _selectedX(-1),
-      _selectedY(-1)
+      _selectedY(-1),
+      _selectedPlayerId(-1)
 {
     _audioDevice.setMasterVolume(0.5f);
     _music.play();
@@ -413,6 +414,16 @@ void Zappy::Engine::render2D(const Zappy::Game &game)
         _hud.drawTileInventory(_selectedX, _selectedY, tile); 
     }
 
+    if (_selectedPlayerId != -1) {
+        const auto& players = game.getPlayers();
+        auto it = players.find(_selectedPlayerId);
+        if (it != players.end()) {
+            _hud.drawPlayerInventory(it->second);
+        } else {
+            _selectedPlayerId = -1;
+        }
+    }
+
     _hud.update();
     _hud.setMessages(game.getNotifications());
     _hud.draw();
@@ -464,9 +475,18 @@ void Zappy::Engine::handleMouseSelection(const Zappy::Game &game)
             if (gridX >= 0 && gridX < mapWidth && gridY >= 0 && gridY < mapHeight) {
                 _selectedX = gridX;
                 _selectedY = gridY;
+
+                _selectedPlayerId = -1;
+                for (const auto& pair : game.getPlayers()) {
+                    if (pair.second.getX() == gridX && pair.second.getY() == gridY) {
+                        _selectedPlayerId = pair.first;
+                        break;
+                    }
+                }
             } else {
                 _selectedX = -1; 
                 _selectedY = -1;
+                _selectedPlayerId = -1;
             }
         }
     }
