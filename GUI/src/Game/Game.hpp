@@ -46,6 +46,8 @@ namespace Zappy
             void setTimeUnit(int timeUnit);
 
             void update(float deltaTime);
+
+            int getTeamRessource(const std::string &teamName, RESSOURCE type) const;
         
         private:
             Map _map;

@@ -147,3 +147,21 @@ void Zappy::Game::update(float deltaTime)
         player.updateVisual(deltaTime);
     }
 }
+
+/**
+* @brief Gets the total amount of a resource for a team.
+* @param teamName The name of the team.
+* @param type The type of resource.
+* @return The total amount of the resource for the team.
+**/
+int Zappy::Game::getTeamRessource(const std::string &teamName, RESSOURCE type) const
+{
+    int total = 0;
+
+    for (const auto &[id, player] : _players) {
+        if (player.getTeamName() == teamName) {
+            total += player.getResource(type);
+        }
+    }
+    return total;
+}
