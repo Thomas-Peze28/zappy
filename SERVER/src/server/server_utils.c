@@ -8,6 +8,7 @@
 #include "server_config.h"
 #include "command.h"
 #include "timer.h"
+#include "gui.h"
 
 void setup_polls(server_t *server)
 {
@@ -67,6 +68,7 @@ void check_starvation(server_t *server)
             server->clients[i].death_time += (126000 / server->config.freq);
         } else {
             send_to_client(&server->clients[i], "dead\n");
+            gui_notify_pdi(server, &server->clients[i]);
             server->clients[i].pending_disconnect = 1;
         }
     }
