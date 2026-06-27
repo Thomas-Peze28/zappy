@@ -33,6 +33,7 @@ void gui_notify_pfk(server_t *server, client_t *player);
 void gui_notify_pdr(server_t *server, client_t *player, int resource);
 void gui_notify_pgt(server_t *server, client_t *player, int resource);
 void gui_notify_pdi(server_t *server, client_t *player);
+void gui_notify_pin(server_t *server, client_t *client);
 void gui_notify_enw(server_t *server, egg_t *egg, int player_id);
 void gui_notify_ebo(server_t *server, egg_t *egg);
 void gui_notify_edi(server_t *server, egg_t *egg);
