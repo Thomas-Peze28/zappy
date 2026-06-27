@@ -63,7 +63,7 @@ static void handle_command(server_t *server, client_t *client, char *line)
     }
     exec_time = get_command_time(server, line);
     if (queue_command(client, line, exec_time) == -1)
-        client->pending_disconnect = 1;
+        return;
 }
 
 static void process_client_lines(server_t *server, client_t *client)
@@ -117,10 +117,11 @@ void handle_poll_events(server_t *server, int nb_events)
         return;
     if (server->polls[0].revents & POLLIN)
         accept_client(server);
-    for (i = 0; i < server->client_count; i++) {
+    for (i = server->client_count - 1; i >= 0; i--) {
         if (server->polls[i + 1].revents & POLLIN)
             handle_client_read(server, i);
-        if (server->polls[i + 1].revents & POLLOUT)
+        if (i < server->client_count &&
+            server->polls[i + 1].revents & POLLOUT)
             handle_client_write(server, i);
     }
 }
