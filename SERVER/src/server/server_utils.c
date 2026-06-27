@@ -55,9 +55,9 @@ int get_next_timeout(server_t *server)
 void check_starvation(server_t *server)
 {
     long long now = get_time_ms();
-    int i;
+    long long cycle;
 
-    for (i = 0; i < server->client_count; i++) {
+    for (int i = 0; i < server->client_count; i++) {
         if (server->clients[i].type != CLIENT_AI ||
             server->clients[i].pending_disconnect)
             continue;
@@ -65,7 +65,9 @@ void check_starvation(server_t *server)
             continue;
         if (server->clients[i].inventory.food > 0) {
             server->clients[i].inventory.food--;
-            server->clients[i].death_time += (126000 / server->config.freq);
+            cycle = 126000LL / (long long)server->config.freq;
+            server->clients[i].death_time += cycle;
+            gui_notify_pin(server, &server->clients[i]);
         } else {
             send_to_client(&server->clients[i], "dead\n");
             gui_notify_pdi(server, &server->clients[i]);

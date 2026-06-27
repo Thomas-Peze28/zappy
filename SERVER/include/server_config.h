@@ -99,6 +99,7 @@ typedef struct server_s {
     map_t *map;
     egg_t eggs[1024];
     int egg_count;
+    unsigned long long next_refill;
 } server_t;
 
 int parse_args(int argc, char **argv, server_config_t *config);
@@ -129,6 +130,7 @@ int get_next_timeout(server_t *server);
 void handle_poll_events(server_t *server, int nb_events);
 void check_starvation(server_t *server);
 void check_end_game(server_t *server);
+void check_and_refill(server_t *server);
 
 void init_team_eggs(server_t *server);
 egg_t *find_available_egg(server_t *server, const char *team);

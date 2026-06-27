@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 #include "map.h"
+#include "gui.h"
+#include <stddef.h>
 
 static void add_res(tile_t *tile, int res_type)
 {
@@ -53,4 +55,48 @@ void spawn_resources(map_t *map, int is_init)
     fill_tile_res(map, md, 4);
     fill_tile_res(map, pr, 5);
     fill_tile_res(map, ts, 6);
+}
+
+static void count_tiles(server_t *srv, int *count)
+{
+    tile_t *t;
+
+    for (int y = 0; y < srv->config.height; y++) {
+        for (int x = 0; x < srv->config.width; x++) {
+            t = &srv->map->tiles[y][x];
+            count[0] += t->food;
+            count[1] += t->linemate;
+            count[2] += t->deraumere;
+            count[3] += t->sibur;
+            count[4] += t->mendiane;
+            count[5] += t->phiras;
+            count[6] += t->thystame;
+        }
+    }
+}
+
+static void add_missing_resources(server_t *srv, int *count, int size)
+{
+    float densities[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
+    int rand_y;
+    int rand_x;
+
+    for (int i = 0; i < 7; i++) {
+        while (count[i] < (int)(size * densities[i])) {
+            rand_y = rand() % srv->config.height;
+            rand_x = rand() % srv->config.width;
+            add_res(&srv->map->tiles[rand_y][rand_x], i);
+            gui_notify_bct(srv, rand_x, rand_y);
+            count[i]++;
+        }
+    }
+}
+
+void check_and_refill(server_t *server)
+{
+    int size = server->config.width * server->config.height;
+    int count[7] = {0};
+
+    count_tiles(server, count);
+    add_missing_resources(server, count, size);
 }

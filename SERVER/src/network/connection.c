@@ -89,7 +89,7 @@ static void spawn_player(server_t *server, client_t *client,
     egg_t *egg)
 {
     long long now = get_time_ms();
-    long long initial_life = 1260000LL / (long long)server->config.freq;
+    long long initial_life;
 
     client->id = server->next_client_id;
     server->next_client_id += 1;
@@ -98,6 +98,7 @@ static void spawn_player(server_t *server, client_t *client,
     client->orientation = (rand() % 4) + 1;
     client->level = 1;
     client->inventory.food = 10;
+    initial_life = 126000LL / (long long)server->config.freq;
     client->death_time = now + initial_life;
 }
 
