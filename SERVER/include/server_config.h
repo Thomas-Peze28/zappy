@@ -100,6 +100,7 @@ typedef struct server_s {
     egg_t eggs[1024];
     int egg_count;
     unsigned long long next_refill;
+    int is_running;
 } server_t;
 
 int parse_args(int argc, char **argv, server_config_t *config);
@@ -135,5 +136,6 @@ void check_and_refill(server_t *server);
 void init_team_eggs(server_t *server);
 egg_t *find_available_egg(server_t *server, const char *team);
 void hatch_egg(server_t *server, egg_t *egg);
+void update_eggs(server_t *server);
 
 #endif

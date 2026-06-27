@@ -39,6 +39,7 @@ void gui_notify_pin(server_t *server, client_t *client);
 void gui_notify_enw(server_t *server, egg_t *egg, int player_id);
 void gui_notify_ebo(server_t *server, egg_t *egg);
 void gui_notify_edi(server_t *server, egg_t *egg);
+void gui_notify_eht(server_t *server, int egg_id);
 void gui_notify_seg(server_t *server, const char *team);
 void gui_notify_plv(server_t *server, client_t *player);
 void gui_notify_ppo(server_t *server, client_t *player);

@@ -24,3 +24,11 @@ void gui_notify_bct(server_t *server, int x, int y)
         tile->thystame);
     send_to_all_gui(server, buf);
 }
+
+void gui_notify_eht(server_t *server, int egg_id)
+{
+    char buf[MAX_CMD_LEN];
+
+    snprintf(buf, MAX_CMD_LEN, "eht %d\n", egg_id);
+    send_to_all_gui(server, buf);
+}

@@ -50,6 +50,8 @@ int create_server(server_t *server)
     server->egg_count = 0;
     server->polls[0].fd = fd;
     server->polls[0].events = POLLIN;
+    server->is_running = 1;
+    server->next_refill = get_time_ms() + ((20 * 1000) / server->config.freq);
     init_team_eggs(server);
     return 0;
 }
@@ -59,13 +61,15 @@ void run_server(server_t *server)
     int nb_events;
     int timeout;
 
-    while (1) {
+    while (server->is_running) {
         setup_polls(server);
         timeout = get_next_timeout(server);
         nb_events = poll(server->polls, server->client_count + 1, timeout);
         handle_poll_events(server, nb_events);
         check_starvation(server);
+        update_eggs(server);
         update_game(server);
+        check_end_game(server);
     }
 }
 
