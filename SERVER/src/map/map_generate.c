@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "map.h"
 #include "gui.h"
+#include <stddef.h>
 
 static void add_res(tile_t *tile, int res_type)
 {
@@ -56,22 +57,50 @@ void spawn_resources(map_t *map, int is_init)
     fill_tile_res(map, ts, 6);
 }
 
-void refill_map(server_t *server)
-{
-    int total_food = 0;
-    int rx = 0;
-    int ry = 0;
-    int required_food = (server->config.width * server->config.height) * 0.5;
+typedef struct {
+    float density;
+    int offset;
+} res_density_t;
 
+static void add_resource(server_t *server, int offset)
+{
+    int rx = rand() % server->config.width;
+    int ry = rand() % server->config.height;
+    int *res_ptr = (int *)((char *)&server->map->tiles[ry][rx] + offset);
+
+    (*res_ptr)++;
+    gui_notify_bct(server, rx, ry);
+}
+
+static void count_tiles(server_t *server, int *count)
+{
     for (int y = 0; y < server->config.height; y++) {
-        for (int x = 0; x < server->config.width; x++)
-            total_food += server->map->tiles[y][x].food;
+        for (int x = 0; x < server->config.width; x++) {
+            tile_t *t = &server->map->tiles[y][x];
+            count[0] += t->food; count[1] += t->linemate;
+            count[2] += t->deraumere; count[3] += t->sibur;
+            count[4] += t->mendiane; count[5] += t->phiras;
+            count[6] += t->thystame;
+        }
     }
-    while (total_food < required_food) {
-        rx = rand() % server->config.width;
-        ry = rand() % server->config.height;
-        server->map->tiles[ry][rx].food++;
-        total_food++;
-        gui_notify_bct(server, rx, ry);
+}
+
+void check_and_refill(server_t *server)
+{
+    int size = server->config.width * server->config.height;
+    res_density_t d[] = {
+        {0.5, offsetof(tile_t, food)}, {0.3, offsetof(tile_t, linemate)},
+        {0.15, offsetof(tile_t, deraumere)}, {0.1, offsetof(tile_t, sibur)},
+        {0.1, offsetof(tile_t, mendiane)}, {0.08, offsetof(tile_t, phiras)},
+        {0.05, offsetof(tile_t, thystame)}
+    };
+    int count[7] = {0};
+
+    count_tiles(server, count);
+    for (int i = 0; i < 7; i++) {
+        while (count[i] < (int)(size * d[i].density)) {
+            add_resource(server, d[i].offset);
+            count[i]++;
+        }
     }
 }

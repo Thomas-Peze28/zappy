@@ -62,6 +62,7 @@ void execute_ai_command(server_t *server, client_t *client, const char *cmd)
 void update_game(server_t *server)
 {
     client_t *cl;
+    unsigned long long now = get_time_ms();
 
     for (int i = 0; i < server->client_count; i++) {
         cl = &server->clients[i];
@@ -71,5 +72,8 @@ void update_game(server_t *server)
             pop_command(cl);
         }
     }
-    refill_map(server);
+    if (now >= server->next_refill) {
+        check_and_refill(server);
+        server->next_refill = now + 20000;
+    }
 }
