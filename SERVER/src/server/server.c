@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include "command.h"
 #include "gui.h"
+#include "timer.h"
 
 static int setup_socket(int port)
 {

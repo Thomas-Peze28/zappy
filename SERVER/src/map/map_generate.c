@@ -57,30 +57,37 @@ void spawn_resources(map_t *map, int is_init)
     fill_tile_res(map, ts, 6);
 }
 
-typedef struct {
-    float density;
-    int offset;
-} res_density_t;
-
-static void add_resource(server_t *server, int offset)
+static void count_tiles(server_t *srv, int *count)
 {
-    int rx = rand() % server->config.width;
-    int ry = rand() % server->config.height;
-    int *res_ptr = (int *)((char *)&server->map->tiles[ry][rx] + offset);
+    tile_t *t;
 
-    (*res_ptr)++;
-    gui_notify_bct(server, rx, ry);
+    for (int y = 0; y < srv->config.height; y++) {
+        for (int x = 0; x < srv->config.width; x++) {
+            t = &srv->map->tiles[y][x];
+            count[0] += t->food;
+            count[1] += t->linemate;
+            count[2] += t->deraumere;
+            count[3] += t->sibur;
+            count[4] += t->mendiane;
+            count[5] += t->phiras;
+            count[6] += t->thystame;
+        }
+    }
 }
 
-static void count_tiles(server_t *server, int *count)
+static void add_missing_resources(server_t *srv, int *count, int size)
 {
-    for (int y = 0; y < server->config.height; y++) {
-        for (int x = 0; x < server->config.width; x++) {
-            tile_t *t = &server->map->tiles[y][x];
-            count[0] += t->food; count[1] += t->linemate;
-            count[2] += t->deraumere; count[3] += t->sibur;
-            count[4] += t->mendiane; count[5] += t->phiras;
-            count[6] += t->thystame;
+    float densities[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
+    int rand_y;
+    int rand_x;
+
+    for (int i = 0; i < 7; i++) {
+        while (count[i] < (int)(size * densities[i])) {
+            rand_y = rand() % srv->config.height;
+            rand_x = rand() % srv->config.width;
+            add_res(&srv->map->tiles[rand_y][rand_x], i);
+            gui_notify_bct(srv, rand_x, rand_y);
+            count[i]++;
         }
     }
 }
@@ -88,19 +95,8 @@ static void count_tiles(server_t *server, int *count)
 void check_and_refill(server_t *server)
 {
     int size = server->config.width * server->config.height;
-    res_density_t d[] = {
-        {0.5, offsetof(tile_t, food)}, {0.3, offsetof(tile_t, linemate)},
-        {0.15, offsetof(tile_t, deraumere)}, {0.1, offsetof(tile_t, sibur)},
-        {0.1, offsetof(tile_t, mendiane)}, {0.08, offsetof(tile_t, phiras)},
-        {0.05, offsetof(tile_t, thystame)}
-    };
     int count[7] = {0};
 
     count_tiles(server, count);
-    for (int i = 0; i < 7; i++) {
-        while (count[i] < (int)(size * d[i].density)) {
-            add_resource(server, d[i].offset);
-            count[i]++;
-        }
-    }
+    add_missing_resources(server, count, size);
 }
