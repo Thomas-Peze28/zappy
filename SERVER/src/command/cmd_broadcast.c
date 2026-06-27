@@ -9,41 +9,39 @@
 #include "gui.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
-static int get_shortest_delta(int pos_sender, int pos_receiver, int map_max)
+static int get_toric_delta(int pos_sender, int pos_receiver, int map_max)
 {
     int delta = pos_sender - pos_receiver;
 
-    if (abs(delta) > map_max / 2) {
-        if (delta > 0)
-            delta -= map_max;
-        else
-            delta += map_max;
-    }
-    if (delta > 0)
-        return 1;
-    if (delta < 0)
-        return -1;
-    return 0;
+    if (delta > map_max / 2)
+        delta -= map_max;
+    else if (delta < -map_max / 2)
+        delta += map_max;
+    return delta;
 }
 
 int calculate_sound_direction(server_t *server, client_t *src, client_t *dst)
 {
     int dx;
     int dy;
+    double angle;
+    int zappy_abs_dirs[8] = {3, 2, 1, 8, 7, 6, 5, 4};
     int final_dir;
-    const int dirs[3][3] = {
-        {2, 3, 4},
-        {1, 0, 5},
-        {8, 7, 6}
-    };
 
     if (src->pos_x == dst->pos_x && src->pos_y == dst->pos_y)
         return 0;
-    dx = get_shortest_delta(src->pos_x, dst->pos_x, server->config.width);
-    dy = get_shortest_delta(src->pos_y, dst->pos_y, server->config.height);
-    final_dir = dirs[dy + 1][dx + 1] - ((dst->orientation - 1) * 2);
-    return (final_dir <= 0) ? (final_dir + 8) : final_dir;
+    dx = get_toric_delta(src->pos_x, dst->pos_x, server->config.width);
+    dy = get_toric_delta(dst->pos_y, src->pos_y, server->config.height);
+    angle = atan2(dx, -dy);
+    if (angle < 0)
+        angle += 2.0 * M_PI;
+    final_dir = zappy_abs_dirs[(int)round(angle / (M_PI / 4.0)) % 8];
+    final_dir -= ((dst->orientation - 1) * 2);
+    if (final_dir <= 0)
+        final_dir += 8;
+    return final_dir;
 }
 
 void cmd_broadcast(server_t *server, client_t *client, const char *text)
