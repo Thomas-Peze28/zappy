@@ -20,9 +20,9 @@ class ZappyBroadcastCoordinator:
     def _escape(self, value):
         return str(value).replace(";", "_").replace("=", "_").replace("\n", "_")
 
-    def _build_packet(self, kind, level, fields=None):
+    def _build_packet(self, kind, level, fields=None, session=None):
         bucket = int(time.time() // 4)
-        session = f"{self.team_name}:{kind}:{level}:{self.leader_id}:{bucket}"
+        session = session or f"{self.team_name}:{kind}:{level}:{self.leader_id}:{bucket}"
 
         data = {
             "team": self.team_name,
@@ -41,11 +41,13 @@ class ZappyBroadcastCoordinator:
 
         return ";".join(parts)
 
-    def build_inventory_packet(self, level, inventory):
+    def build_inventory_packet(self, level, inventory, role="drone", known=1):
         return self._build_packet(
             "inventory-status",
             level,
             {
+                "role": role,
+                "known": known,
                 "food": inventory.get("food", 0),
                 "linemate": inventory.get("linemate", 0),
                 "deraumere": inventory.get("deraumere", 0),
@@ -56,24 +58,29 @@ class ZappyBroadcastCoordinator:
             },
         )
 
-    def build_elevation_packet(self, level, payload=None):
-        payload = payload or {}
+    def build_ritual_site_packet(self, level, required_players, leader_food, known=1):
+        # Session stable: all followers lock on the single leader global ritual call.
+        session = f"{self.team_name}:global-ritual:{self.leader_id}"
+        return self._build_packet(
+            "ritual-site",
+            level,
+            {
+                "required": required_players,
+                "food": leader_food,
+                "known": known,
+            },
+            session=session,
+        )
 
-        fields = {
-            "players": payload.get("players", 0),
-            "required": payload.get("required", 0),
-            "food": payload.get("food", 0),
-        }
-
-        missing = payload.get("missing", {})
-        for stone, amount in missing.items():
-            fields[f"missing_{stone}"] = amount
-
-        leader_inventory = payload.get("leader_inventory", {})
-        for stone, amount in leader_inventory.items():
-            fields[f"inv_{stone}"] = amount
-
-        return self._build_packet("elevation-request", level, fields)
+    def build_ritual_ready_packet(self, level, session_id, food):
+        return self._build_packet(
+            "ritual-ready",
+            level,
+            {
+                "food": food,
+            },
+            session=session_id,
+        )
 
     def parse_incoming(self, raw_message):
         direction = 0
@@ -108,6 +115,8 @@ class ZappyBroadcastCoordinator:
             payload = {}
 
             if kind == "inventory-status":
+                payload["role"] = data.get("role", "drone")
+                payload["known"] = int(data.get("known", 1))
                 payload["inventory"] = {
                     "food": int(data.get("food", 0)),
                     "linemate": int(data.get("linemate", 0)),
@@ -118,24 +127,10 @@ class ZappyBroadcastCoordinator:
                     "thystame": int(data.get("thystame", 0)),
                 }
 
-            elif kind == "elevation-request":
-                payload["players"] = int(data.get("players", 0))
+            elif kind in ("ritual-site", "ritual-ready"):
                 payload["required"] = int(data.get("required", 0))
                 payload["food"] = int(data.get("food", 0))
-
-                missing = {}
-                for key, value in data.items():
-                    if key.startswith("missing_"):
-                        stone = key.replace("missing_", "", 1)
-                        missing[stone] = int(value)
-                payload["missing"] = missing
-
-                leader_inventory = {}
-                for key, value in data.items():
-                    if key.startswith("inv_"):
-                        stone = key.replace("inv_", "", 1)
-                        leader_inventory[stone] = int(value)
-                payload["leader_inventory"] = leader_inventory
+                payload["known"] = int(data.get("known", 1))
 
             return {
                 "kind": kind,
@@ -151,8 +146,8 @@ class ZappyBroadcastCoordinator:
             print(f"[BROADCAST] parse error: {e} | raw={text}")
             return None
 
-    def should_follow(self, frame, lock_ttl=6.0):
-        if not frame or frame.get("kind") != "elevation-request":
+    def should_follow(self, frame, lock_ttl=60.0):
+        if not frame or frame.get("kind") not in ("ritual-site", "ritual-ready"):
             return False
 
         now = time.time()

@@ -7,3 +7,4 @@ class DroneState(Enum):
     ELEVATE = 3
     JOIN_ELEVATION = 4
     FORK = 5
+    RITUAL_FOOD = 6
