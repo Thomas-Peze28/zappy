@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 static const char ERR_USAGE[] =
-    "USAGE: ./zappy_server -p port -x width -y height"
+"USAGE: ./zappy_server -p port -x width -y height"
     " -n name1 name2 ... -c clientsNb -f freq\n";
 
 static void print_usage(void)
