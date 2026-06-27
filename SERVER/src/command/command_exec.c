@@ -63,7 +63,6 @@ void update_game(server_t *server)
 {
     client_t *cl;
     unsigned long long now = get_time_ms();
-    unsigned long long refill_delay;
 
     for (int i = 0; i < server->client_count; i++) {
         cl = &server->clients[i];
@@ -73,9 +72,8 @@ void update_game(server_t *server)
             pop_command(cl);
         }
     }
-    refill_delay = (20 * 1000) / server->config.freq;
     if (now >= server->next_refill) {
         check_and_refill(server);
-        server->next_refill = now + refill_delay;
+        server->next_refill = now + 20000;
     }
 }
