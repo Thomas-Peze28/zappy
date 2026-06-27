@@ -24,6 +24,17 @@ int find_team(server_config_t *config, const char *name)
     return -1;
 }
 
+static void send_existing_players(server_t *server, client_t *gui)
+{
+    int i;
+
+    for (i = 0; i < server->client_count; i++) {
+        if (server->clients[i].type != CLIENT_AI)
+            continue;
+        gui_notify_pnw_to(server, gui, &server->clients[i]);
+    }
+}
+
 void send_to_client(client_t *client, const char *msg)
 {
     int len = strlen(msg);
@@ -34,15 +45,17 @@ void send_to_client(client_t *client, const char *msg)
     }
     memcpy(client->write_buf + client->write_len, msg, len);
     client->write_len += len;
+    buffer_write(client);
 }
 
 int get_team_slots(server_t *server, const char *team)
 {
-    int slots = server->config.clients_nb;
+    int slots = 0;
 
-    for (int i = 0; i < server->client_count; i++) {
-        if (strcmp(server->clients[i].team_name, team) == 0)
-            slots--;
+    for (int i = 0; i < server->egg_count; i++) {
+        if (!server->eggs[i].is_hatched &&
+            strcmp(server->eggs[i].team_name, team) == 0)
+            slots++;
     }
     return slots;
 }
@@ -55,6 +68,9 @@ static void handle_gui(server_t *server, int idx)
     strncpy(gui->team_name, "GRAPHIC", TEAM_NAME_LEN - 1);
     gui_send_msz(server, gui);
     gui_send_mct(server, gui);
+    gui_send_all_eggs(server, gui);
+    gui_send_tna(server, gui);
+    send_existing_players(server, gui);
 }
 
 static void send_ai_info(server_t *server, int idx, const char *team)
@@ -69,25 +85,34 @@ static void send_ai_info(server_t *server, int idx, const char *team)
     send_to_client(&server->clients[idx], buf);
 }
 
-static void spawn_player(server_t *server, client_t *client)
+static void spawn_player(server_t *server, client_t *client,
+    egg_t *egg)
 {
     long long now = get_time_ms();
+    long long initial_life = 1260000LL / (long long)server->config.freq;
 
     client->id = server->next_client_id;
     server->next_client_id += 1;
-    client->pos_x = rand() % server->config.width;
-    client->pos_y = rand() % server->config.height;
+    client->pos_x = egg->pos_x;
+    client->pos_y = egg->pos_y;
     client->orientation = (rand() % 4) + 1;
     client->level = 1;
     client->inventory.food = 10;
-    client->death_time = now + (1260000 / server->config.freq);
+    client->death_time = now + initial_life;
 }
 
 static void handle_ai(server_t *server, int idx, const char *team)
 {
+    egg_t *egg = find_available_egg(server, team);
+
+    if (egg == NULL) {
+        send_to_client(&server->clients[idx], "ko\n");
+        server->clients[idx].pending_disconnect = 1;
+        return;
+    }
     server->clients[idx].type = CLIENT_AI;
     strncpy(server->clients[idx].team_name, team, TEAM_NAME_LEN - 1);
-    spawn_player(server, &server->clients[idx]);
+    spawn_player(server, &server->clients[idx], egg);
     send_ai_info(server, idx, team);
     gui_notify_pnw(server, &server->clients[idx]);
 }
