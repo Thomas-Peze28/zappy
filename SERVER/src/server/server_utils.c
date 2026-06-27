@@ -65,7 +65,7 @@ void check_starvation(server_t *server)
             continue;
         if (server->clients[i].inventory.food > 0) {
             server->clients[i].inventory.food--;
-            cycle = 126000LL / (long long)server->config.freq;
+            cycle = 1260000LL / (long long)server->config.freq;
             server->clients[i].death_time += cycle;
             gui_notify_pin(server, &server->clients[i]);
         } else {
