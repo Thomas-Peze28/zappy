@@ -53,7 +53,7 @@ int accept_client(server_t *server)
 void disconnect_client(server_t *server, int idx)
 {
     close(server->clients[idx].fd);
-    init_client(&server->clients[idx]);
     server->clients[idx] = server->clients[server->client_count - 1];
+    init_client(&server->clients[server->client_count - 1]);
     server->client_count--;
 }
