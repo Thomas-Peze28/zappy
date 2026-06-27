@@ -30,6 +30,7 @@ void gui_notify_pbc(server_t *server, client_t *player, const char *msg);
 void gui_notify_pic(server_t *server, client_t *player);
 void gui_notify_pie(server_t *server, client_t *player, int result);
 void gui_notify_pfk(server_t *server, client_t *player);
+void gui_notify_bct(server_t *server, int x, int y);
 void gui_notify_pdr(server_t *server, client_t *player, int resource);
 void gui_notify_pgt(server_t *server, client_t *player, int resource);
 void gui_notify_pdi(server_t *server, client_t *player);

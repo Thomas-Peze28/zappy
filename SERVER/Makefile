@@ -41,6 +41,7 @@ SRC     =   src/main.c                      \
 			src/gui/gui_utils.c \
 			src/gui/map.c \
 			src/gui/notify_action.c \
+			src/gui/notify_utils.c \
 			src/gui/notify_egg.c \
 			src/gui/notify_player.c \
 			src/gui/team.c \
