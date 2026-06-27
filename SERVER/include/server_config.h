@@ -14,7 +14,7 @@
     #define MIN_MAP_SIZE 10
     #define MAX_TEAMS 20
     #define MAX_CLIENTS 1024
-    #define BUFFER_SIZE 4096
+    #define BUFFER_SIZE 32768
     #define MAX_CMD_LEN 128
     #define TEAM_NAME_LEN 64
     #define MAX_COMMAND_LEN 256
@@ -131,5 +131,9 @@ void handle_poll_events(server_t *server, int nb_events);
 void check_starvation(server_t *server);
 void check_end_game(server_t *server);
 void check_and_refill(server_t *server);
+
+void init_team_eggs(server_t *server);
+egg_t *find_available_egg(server_t *server, const char *team);
+void hatch_egg(server_t *server, egg_t *egg);
 
 #endif

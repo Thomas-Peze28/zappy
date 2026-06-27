@@ -47,9 +47,10 @@ int create_server(server_t *server)
     server->fd = fd;
     server->client_count = 0;
     server->next_client_id = 1;
+    server->egg_count = 0;
     server->polls[0].fd = fd;
     server->polls[0].events = POLLIN;
-    server->next_refill = get_time_ms() + 2000;
+    init_team_eggs(server);
     return 0;
 }
 
