@@ -80,16 +80,15 @@ static void add_missing_resources(server_t *srv, int *count, int size)
     float densities[7] = {0.1, 0.05, 0.03, 0.02, 0.01, 0.01, 0.01};
     int rand_y;
     int rand_x;
-    int res;
+    int needed;
 
-    for (int loop = 0; loop < 1000; loop++) {
-        res = rand() % 7;
-        if (count[res] < (int)(size * densities[res])) {
+    for (int i = 0; i < 7; i++) {
+        needed = (int)(size * densities[i]) - count[i];
+        for (int j = 0; j < needed; j++) {
             rand_y = rand() % srv->config.height;
             rand_x = rand() % srv->config.width;
-            add_res(&srv->map->tiles[rand_y][rand_x], res);
+            add_res(&srv->map->tiles[rand_y][rand_x], i);
             gui_notify_bct(srv, rand_x, rand_y);
-            count[res]++;
         }
     }
 }
