@@ -61,16 +61,15 @@ void execute_ai_command(server_t *server, client_t *client, const char *cmd)
 
 void update_game(server_t *server)
 {
-    int i;
+    client_t *cl;
 
-    for (i = 0; i < server->client_count; i++) {
-        if (server->clients[i].type == CLIENT_AI &&
-            !server->clients[i].pending_disconnect &&
-            server->clients[i].command_count > 0 &&
-            command_ready(&server->clients[i].commands[0])) {
-            execute_ai_command(server, &server->clients[i],
-                server->clients[i].commands[0].command);
-            pop_command(&server->clients[i]);
+    for (int i = 0; i < server->client_count; i++) {
+        cl = &server->clients[i];
+        if (cl->type == CLIENT_AI && !cl->pending_disconnect &&
+            cl->command_count > 0 && command_ready(&cl->commands[0])) {
+            execute_ai_command(server, cl, cl->commands[0].command);
+            pop_command(cl);
         }
     }
+    refill_map(server);
 }

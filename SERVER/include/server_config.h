@@ -129,5 +129,6 @@ int get_next_timeout(server_t *server);
 void handle_poll_events(server_t *server, int nb_events);
 void check_starvation(server_t *server);
 void check_end_game(server_t *server);
+void refill_map(server_t *server);
 
 #endif

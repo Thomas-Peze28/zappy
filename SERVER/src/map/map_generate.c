@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include "map.h"
+#include "gui.h"
 
 static void add_res(tile_t *tile, int res_type)
 {
@@ -53,4 +54,24 @@ void spawn_resources(map_t *map, int is_init)
     fill_tile_res(map, md, 4);
     fill_tile_res(map, pr, 5);
     fill_tile_res(map, ts, 6);
+}
+
+void refill_map(server_t *server)
+{
+    int total_food = 0;
+    int rx = 0;
+    int ry = 0;
+    int required_food = (server->config.width * server->config.height) * 0.5;
+
+    for (int y = 0; y < server->config.height; y++) {
+        for (int x = 0; x < server->config.width; x++)
+            total_food += server->map->tiles[y][x].food;
+    }
+    while (total_food < required_food) {
+        rx = rand() % server->config.width;
+        ry = rand() % server->config.height;
+        server->map->tiles[ry][rx].food++;
+        total_food++;
+        gui_notify_bct(server, rx, ry);
+    }
 }
