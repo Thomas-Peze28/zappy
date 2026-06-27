@@ -40,4 +40,5 @@ void check_end_game(server_t *server)
     if (winner == NULL)
         return;
     gui_notify_seg(server, winner);
+    server->is_running = 0;
 }
