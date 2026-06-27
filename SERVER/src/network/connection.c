@@ -81,7 +81,7 @@ static void spawn_player(server_t *server, client_t *client)
     client->orientation = (rand() % 4) + 1;
     client->level = 1;
     client->inventory.food = 10;
-    initial_life = 1260000LL / (long long)server->config.freq;
+    initial_life = 126000LL / (long long)server->config.freq;
     client->death_time = now + initial_life;
 }
 
