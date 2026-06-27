@@ -77,18 +77,17 @@ static void count_tiles(server_t *srv, int *count)
 
 static void add_missing_resources(server_t *srv, int *count, int size)
 {
-    float densities[7] = {0.1, 0.05, 0.03, 0.02, 0.01, 0.01, 0.01};
+    float densities[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
     int rand_y;
     int rand_x;
-    int needed;
 
     for (int i = 0; i < 7; i++) {
-        needed = (int)(size * densities[i]) - count[i];
-        for (int j = 0; j < needed; j++) {
+        while (count[i] < (int)(size * densities[i])) {
             rand_y = rand() % srv->config.height;
             rand_x = rand() % srv->config.width;
             add_res(&srv->map->tiles[rand_y][rand_x], i);
             gui_notify_bct(srv, rand_x, rand_y);
+            count[i]++;
         }
     }
 }
