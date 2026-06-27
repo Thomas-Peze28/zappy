@@ -72,6 +72,7 @@ static void send_ai_info(server_t *server, int idx, const char *team)
 static void spawn_player(server_t *server, client_t *client)
 {
     long long now = get_time_ms();
+    long long initial_life;
 
     client->id = server->next_client_id;
     server->next_client_id += 1;
@@ -80,7 +81,8 @@ static void spawn_player(server_t *server, client_t *client)
     client->orientation = (rand() % 4) + 1;
     client->level = 1;
     client->inventory.food = 10;
-    client->death_time = now + (1260000 / server->config.freq);
+    initial_life = 1260000LL / (long long)server->config.freq;
+    client->death_time = now + initial_life;
 }
 
 static void handle_ai(server_t *server, int idx, const char *team)
