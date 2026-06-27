@@ -74,6 +74,6 @@ void update_game(server_t *server)
     }
     if (now >= server->next_refill) {
         check_and_refill(server);
-        server->next_refill = now + 20000;
+        server->next_refill = now + 2000;
     }
 }
