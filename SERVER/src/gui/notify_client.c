@@ -18,4 +18,12 @@ void gui_notify_pnw_to(server_t *server, client_t *gui,
         player->id, player->pos_x, player->pos_y,
         player->orientation, player->level, player->team_name);
     send_to_client(gui, buf);
+    snprintf(buf, MAX_CMD_LEN,
+        "pin #%d %d %d %d %d %d %d %d %d %d\n",
+        player->id, player->pos_x, player->pos_y,
+        player->inventory.food, player->inventory.linemate,
+        player->inventory.deraumere, player->inventory.sibur,
+        player->inventory.mendiane, player->inventory.phiras,
+        player->inventory.thystame);
+    send_to_client(gui, buf);
 }

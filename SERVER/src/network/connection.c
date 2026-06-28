@@ -116,6 +116,7 @@ static void handle_ai(server_t *server, int idx, const char *team)
     spawn_player(server, &server->clients[idx], egg);
     send_ai_info(server, idx, team);
     gui_notify_pnw(server, &server->clients[idx]);
+    gui_notify_pin(server, &server->clients[idx]);
 }
 
 void handle_connection(server_t *server, int idx)
