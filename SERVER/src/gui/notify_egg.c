@@ -45,7 +45,7 @@ void gui_notify_ppo(server_t *server, client_t *player)
 {
     char buf[MAX_CMD_LEN];
 
-    snprintf(buf, MAX_CMD_LEN, "ppo %d %d %d %d\n",
+    snprintf(buf, MAX_CMD_LEN, "ppo #%d %d %d %d\n",
         player->id, player->pos_x, player->pos_y,
         player->orientation);
     send_to_all_gui(server, buf);
