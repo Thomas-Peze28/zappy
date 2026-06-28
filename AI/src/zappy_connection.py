@@ -39,3 +39,4 @@ def connect_client(host, port, team_name):
         return sock, client_num, map_x, map_y
     except Exception:
         return None
+    

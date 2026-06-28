@@ -1,9 +1,11 @@
-import math
-import time
 import os
-from collections import deque
+import time
 
 from .zappy_broadcast import ZappyBroadcastCoordinator
+from .zappy_drone_registry import ZappyDroneRegistry
+from .zappy_movement import ZappyMovement
+from .zappy_network import ZappyNetwork
+from .zappy_ritual import ZappyRitual
 from .zappy_state import DroneState
 
 
@@ -18,99 +20,85 @@ class ZappyAI:
         8: [6, 2, 2, 2, 2, 2, 1],
     }
     STONES = ["linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"]
-    FORK_COOLDOWN = 30.0
-    CONNECT_NBR_COOLDOWN = 10.0
-
+    MIN_DRONES = 15
+    FORK_COOLDOWN = 18.0
+    CONNECT_NBR_COOLDOWN = 4.0
+    FOOD_SEARCH_MIN = 18
+    FORK_FOOD_MIN = 25
+    JOIN_RITUAL_FOOD_MIN = 22
+    COLLECTOR_FOOD_TARGET = 50
+    COLLECTOR_READY_FOOD_MIN = 45
+    LEADER_RITUAL_FOOD_MIN = 70
+    EMERGENCY_FOOD_MIN = 8
+    INVENTORY_BROADCAST_COOLDOWN = 8.0
     def __init__(self, manager, sock, team_name, remaining_slots, map_x, map_y):
         self.manager = manager
-        self.sock = sock
         self.team_name = team_name
         self.remaining_slots = remaining_slots
         self.map_x = map_x
         self.map_y = map_y
-        self.read_buffer = ""
-        self.command_queue = deque()
-        self.sent_commands = deque()
+        self.sock = sock
         self.inventory = {}
         self.vision = []
         self.inventory_fresh = False
         self.vision_fresh = False
         self.state = DroneState.SEARCH_FOOD
         self.level = 1
-        self.food_threshold = 15
+        self.food_threshold = self.FOOD_SEARCH_MIN
         self.last_fork_time = 0.0
         self.last_connect_nbr_time = time.time()
-        self.drone_id = f"{os.getpid()}-{self.sock.fileno()}-{int(time.time() * 1000)}"
-        self.broadcast = ZappyBroadcastCoordinator(team_name, self.drone_id)
-        self.known_drones = {}
         self.last_inventory_broadcast = 0.0
-        self.INVENTORY_BROADCAST_COOLDOWN = 8.0
+        self.last_leader_block_log = 0.0
+        self.last_leader_status_log = 0.0
+        self.last_seen_leader_id = None
+        self.last_fast_join_log = 0.0
+        self.drone_id = f"{os.getpid()}-{sock.fileno()}-{int(time.time() * 1000)}"
+        self.broadcast = ZappyBroadcastCoordinator(team_name, self.drone_id)
+        self.registry = ZappyDroneRegistry(self.drone_id, self.MIN_DRONES, manager)
+        self.net = ZappyNetwork(sock, manager, self._handle_response)
+        self.net.set_broadcast_handler(self._handle_broadcast)
+        self.net.set_level_up_handler(self._handle_level_up)
+        self.movement = ZappyMovement(self.net.queue_command)
+        self.ritual = ZappyRitual(
+            self.drone_id, team_name,
+            self.net.queue_command,
+            self.broadcast, self.registry, self.movement,
+        )
 
-    def queue_command(self, command):
-        self.command_queue.append(command)
-        self._flush_commands()
-
-    def _flush_commands(self):
-        while self.command_queue and len(self.sent_commands) < 10:
-            cmd = self.command_queue.popleft()
-            try:
-                self.sock.sendall((cmd + "\n").encode("utf-8"))
-                self.sent_commands.append(cmd)
-            except Exception:
-                self.manager.disconnect()
-                return
-
-    def receive_data(self):
+    def _handle_level_up(self, line):
         try:
-            data = self.sock.recv(4096)
-            if not data:
-                self.manager.disconnect()
-                return
-            self.read_buffer += data.decode("utf-8")
-            self._process_buffer()
-        except BlockingIOError:
+            was_locked_group = (
+                self.ritual.leader_locked
+                or self.ritual.committed_session is not None
+                or self.ritual.arrived_at_leader
+            )
+            was_locked_leader = self.ritual.leader_locked and self._is_global_leader()
+            self.level = int(line.split(":")[1].strip())
+            print(f"[IA] Niveau {self.level} atteint !", flush=True)
+            self.net.clear_queue()
+            self.inventory_fresh = False
+            self.vision_fresh = False
+            self.ritual.set_level(self.level)
+            self.ritual._current_leader_id_snapshot = self.registry.current_leader_id(self.level, self.inventory)
+            outcome = self.ritual.reset_after_level_up(
+                self.level, self.team_name, self.drone_id,
+                was_locked_group, was_locked_leader,
+                self._target_group_size,
+            )
+
+            if outcome == "leader":
+                self.state = DroneState.ELEVATE
+                print("[LEADER] Rituel reussi: je reste bloque sur la case pour enchainer le prochain rituel.", flush=True)
+            elif outcome == "follower":
+                self.state = DroneState.JOIN_ELEVATION
+                print("[IA] Rituel reussi: je reste sur la case du leader, aucun mouvement.", flush=True)
+            elif outcome == "max_level":
+                self.state = DroneState.JOIN_ELEVATION
+                print("[IA] Niveau max atteint: je reste sur la case, aucun mouvement.", flush=True)
+            else:
+                self.state = DroneState.SEARCH_FOOD
+        except ValueError:
             pass
-        except Exception:
-            self.manager.disconnect()
-
-    def _process_buffer(self):
-        while "\n" in self.read_buffer:
-            line, self.read_buffer = self.read_buffer.split("\n", 1)
-            line = line.strip()
-
-            if line == "dead":
-                print("[*] Le drone est mort de faim.")
-                self.manager.disconnect()
-                return
-
-            if line.startswith("message"):
-                parts = line.replace("message ", "").split(",", 1)
-                if len(parts) == 2:
-                    try:
-                        self._handle_broadcast(int(parts[0].strip()), parts[1].strip())
-                    except ValueError:
-                        pass
-                continue
-
-            if line.startswith("eject:"):
-                continue
-
-            if line.startswith("Current level:"):
-                try:
-                    self.level = int(line.split(":")[1].strip())
-                    print(f"[IA] Niveau {self.level} atteint !")
-                    self.state = DroneState.SEARCH_FOOD
-                    self.inventory_fresh = False
-                    self.vision_fresh = False
-                except ValueError:
-                    pass
-                continue
-
-            if self.sent_commands:
-                original_cmd = self.sent_commands.popleft()
-                self._handle_response(original_cmd, line)
-
-            self._flush_commands()
 
     def _handle_response(self, command, response):
         if command == "Inventory":
@@ -136,55 +124,56 @@ class ZappyAI:
 
         if command == "Incantation":
             if response == "Elevation underway":
-                print("[IA] Rituel en cours, je me fige.")
-                self.command_queue.clear()
+                print("[IA] Rituel en cours, je me fige.", flush=True)
+                self.net.clear_queue()
             elif response == "ko":
-                print("[IA] Échec incantation (ko). Reset.")
                 self.inventory_fresh = False
                 self.vision_fresh = False
+                if self.ritual.leader_locked:
+                    print("[LEADER] Incantation ko: je reste sur place et je retente quand la case est prete.", flush=True)
+                    self.state = DroneState.ELEVATE
+                    self.net.clear_queue()
+                    return
+                print("[IA] Échec incantation (ko). Reset.", flush=True)
                 self.state = DroneState.SEARCH_FOOD
+                if self.ritual.my_ritual_session:
+                    self.ritual.ignored_ritual_sessions[self.ritual.my_ritual_session] = time.time()
+                self.ritual.ritual_sessions.clear()
+                self.ritual.my_ritual_session = None
             return
 
         if command == "Fork" and response == "ok":
             print("[IA] Œuf pondu ! Demande des slots disponibles...")
-            self.queue_command("Connect_nbr")
+            self.net.queue_command("Connect_nbr")
             return
 
         if command == "Connect_nbr":
             try:
                 available_slots = int(response)
                 if available_slots > 0:
-                    print(f"[IA] {available_slots} slot(s) disponible(s) sur le serveur. Prêt pour un nouveau drone !")
+                    print(f"[IA] {available_slots} slot(s) disponible(s) sur le serveur.")
+                    self.registry.try_spawn_child(available_slots, self.level, self.inventory)
             except ValueError:
                 pass
             return
 
-        if command.startswith("Take") and response == "ko":
-            self.vision_fresh = False
+        if command.startswith("Take "):
+            resource = command.split(" ", 1)[1]
+            if response == "ok":
+                self.inventory[resource] = self.inventory.get(resource, 0) + 1
+                self.inventory_fresh = True
+            else:
+                self.vision_fresh = False
             return
 
-        if command.startswith("Set") and response == "ko":
-            resource = command.split(" ", 1)[-1]
-            print(f"[IA] Impossible de déposer '{resource}' (ko).")
-
-    def _handle_inventory_broadcast(self, frame):
-        drone_id = frame.get("leader_id")
-        payload = frame.get("payload", {})
-        inventory = payload.get("inventory", {})
-
-        if not drone_id or drone_id == self.drone_id:
+        if command.startswith("Set "):
+            resource = command.split(" ", 1)[1]
+            if response == "ok":
+                self.inventory[resource] = max(0, self.inventory.get(resource, 0) - 1)
+                self.inventory_fresh = True
+            else:
+                print(f"[IA] Impossible de déposer '{resource}' (ko).")
             return
-
-        self.known_drones[drone_id] = {
-            "level": frame.get("level", 0),
-            "inventory": inventory,
-            "last_seen": time.time(),
-        }
-
-        print(
-            f"[IA] Info inventaire reçue de {drone_id}: "
-            f"lvl={frame.get('level', 0)} inv={inventory}"
-        )
 
     def _handle_broadcast(self, k, text):
         frame = self.broadcast.parse_incoming(text)
@@ -197,258 +186,366 @@ class ZappyAI:
             self._handle_inventory_broadcast(frame)
             return
 
-        if kind != "elevation-request":
+        if kind in ("ritual-site", "ritual-ready"):
+            switched = self.ritual.handle_ritual_broadcast(
+                k, frame,
+                self.MIN_DRONES,
+                self.registry.current_leader_id(self.level, self.inventory),
+            )
+            if switched:
+                self.state = DroneState.JOIN_ELEVATION
+                self.net.clear_queue()
+                if not self.net.sent_commands:
+                    best_id, best_session = self.ritual.best_ritual_session()
+                    if best_session is not None:
+                        self.ritual.go_to_ritual_site(
+                            best_session,
+                            self._deposit_all_stones_for_ritual,
+                            self.inventory_fresh,
+                            self.net,
+                        )
+
+    def _handle_inventory_broadcast(self, frame):
+        drone_id = frame.get("leader_id")
+        payload = frame.get("payload", {})
+        inventory = payload.get("inventory", {})
+
+        if not drone_id or drone_id == self.drone_id:
             return
 
-        target_level = frame.get("level", 0)
+        drone_level = frame.get("level", 0)
+        self.registry.update_from_broadcast(drone_id, drone_level, inventory)
 
-        if target_level != self.level + 1:
-            return
+        for session_id, session in list(self.ritual.ritual_sessions.items()):
+            if session.get("leader_id") == drone_id and drone_level >= session.get("target_level", 99):
+                self.ritual.ritual_sessions.pop(session_id, None)
+                if self.ritual.my_ritual_session == session_id:
+                    self.ritual.my_ritual_session = None
 
-        if self.inventory.get("food", 0) <= 10:
-            return
-
-        if not self.broadcast.should_follow(frame):
-            return
-
-        self.command_queue.clear()
-        self.state = DroneState.JOIN_ELEVATION
-
-        if k == 0:
-            print("[IA] FOLLOWER : Arrivé sur la case du leader.")
-        else:
-            print(f"[IA] FOLLOWER : Je rejoins le broadcast direction {k}.")
-            self._move_to_sound(k)
-
-    def _team_elevation(self):
-        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-        if not req:
-            return False
-
-        now = time.time()
-        same_level_helpers = 1
-        total_stones = {
-            stone: self.inventory.get(stone, 0)
-            for stone in self.STONES
-        }
-
-        for drone in self.known_drones.values():
-            if now - drone.get("last_seen", 0) > 20:
-                continue
-
-            if drone.get("level") != self.level:
-                continue
-
-            inv = drone.get("inventory", {})
-            if inv.get("food", 0) <= 10:
-                continue
-
-            same_level_helpers += 1
-
-            for stone in self.STONES:
-                total_stones[stone] += inv.get(stone, 0)
-
-        if same_level_helpers < req[0]:
-            return False
-
-        for i, stone in enumerate(self.STONES):
-            if total_stones[stone] < req[i + 1]:
-                return False
-
-        return True
-
-    def _move_to_sound(self, k):
-        if k == 1:
-            self.queue_command("Forward")
-        elif k == 2:
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-        elif k == 3:
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-        elif k == 4:
-            self.queue_command("Right")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-            self.queue_command("Left")
-        elif k == 5:
-            self.queue_command("Right")
-            self.queue_command("Right")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Right")
-        elif k == 6:
-            self.queue_command("Left")
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-            self.queue_command("Right")
-        elif k == 7:
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-        elif k == 8:
-            self.queue_command("Forward")
-            self.queue_command("Left")
-            self.queue_command("Forward")
-            self.queue_command("Right")
-
-    def move_to_target(self, target_index):
-        if target_index == 0:
-            return
-        r = int(math.sqrt(target_index))
-        c = target_index - (r * r) - r
-        for _ in range(r):
-            self.queue_command("Forward")
-        if c < 0:
-            self.queue_command("Left")
-            for _ in range(abs(c)):
-                self.queue_command("Forward")
-            self.queue_command("Right")
-        elif c > 0:
-            self.queue_command("Right")
-            for _ in range(abs(c)):
-                self.queue_command("Forward")
-            self.queue_command("Left")
-
-    def _missing_stones(self):
-        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-        if not req:
-            return {}
-        return {
-            stone: req[i + 1] - self.inventory.get(stone, 0)
-            for i, stone in enumerate(self.STONES)
-            if self.inventory.get(stone, 0) < req[i + 1]
-        }
-
-    def _is_ready_for_elevation(self):
-        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-        if not req:
-            return False
-        return all(
-            self.inventory.get(stone, 0) >= req[i + 1]
-            for i, stone in enumerate(self.STONES)
+        print(
+            f"[IA] Info inventaire reçue de {drone_id}: "
+            f"lvl={frame.get('level', 0)} role={payload.get('role', 'drone')} "
+            f"known_by_sender={payload.get('known', '?')} inv={inventory}",
+            flush=True,
         )
-    
+
     def _broadcast_inventory(self):
         now = time.time()
-
         if now - self.last_inventory_broadcast < self.INVENTORY_BROADCAST_COOLDOWN:
-            return
-
-        if self.inventory.get("food", 0) <= 10:
             return
 
         packet = self.broadcast.build_inventory_packet(
             self.level,
-            {
-                "food": self.inventory.get("food", 0),
-                "linemate": self.inventory.get("linemate", 0),
-                "deraumere": self.inventory.get("deraumere", 0),
-                "sibur": self.inventory.get("sibur", 0),
-                "mendiane": self.inventory.get("mendiane", 0),
-                "phiras": self.inventory.get("phiras", 0),
-                "thystame": self.inventory.get("thystame", 0),
-            }
+            {stone: self.inventory.get(stone, 0) for stone in self.STONES + ["food"]},
+            role="leader" if self._is_global_leader() else "drone",
+            known=self._known_drone_count(),
         )
-
-        self.queue_command(f"Broadcast {packet}")
+        self.net.queue_command(f"Broadcast {packet}")
         self.last_inventory_broadcast = now
 
+    def _known_drone_count(self):
+        return self.registry.known_drone_count(self.level, self.inventory)
+
+    def _is_global_leader(self):
+        return self.registry.is_global_leader(self.level, self.inventory)
+
+    def _target_group_size(self):
+        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+        if not req:
+            return self.MIN_DRONES
+        return max(self.MIN_DRONES, req[0])
+
+    def _log_leader_status(self):
+        leader_id = self.registry.current_leader_id(self.level, self.inventory)
+        now = time.time()
+        changed = leader_id != self.last_seen_leader_id
+        if changed or now - self.last_leader_status_log >= 10.0:
+            if leader_id == self.drone_id:
+                print(
+                    f"[LEADER] Je suis le leader. id={self.drone_id} "
+                    f"known={self._known_drone_count()}/{self.MIN_DRONES} "
+                    f"food={self.inventory.get('food', 0)}. Je recolte uniquement la food.",
+                    flush=True,
+                )
+            else:
+                print(f"[IA] Leader actuel={leader_id}. Mon id={self.drone_id}.", flush=True)
+            self.last_seen_leader_id = leader_id
+            self.last_leader_status_log = now
+
+    def _log_leader_block(self, reason):
+        now = time.time()
+        if now - self.last_leader_block_log < 5.0:
+            return
+        print(f"[LEADER] Pas encore prêt: {reason} | id={self.drone_id}", flush=True)
+        self.last_leader_block_log = now
+
+    def _planned_remaining_requirements(self):
+        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+        totals = {stone: 0 for stone in self.STONES}
+        if not req:
+            return totals
+        for i, stone in enumerate(self.STONES):
+            totals[stone] = req[i + 1]
+        return totals
+
+    def _needed_global_stones_to_collect(self):
+        need = self._planned_remaining_requirements()
+        have = self.registry.total_known_stones()
+        return {
+            stone: need[stone] - have.get(stone, 0)
+            for stone in self.STONES
+            if have.get(stone, 0) < need.get(stone, 0)
+        }
+
+    def _global_ritual_conditions_ok(self):
+        if not self._is_global_leader():
+            return False
+
+        known = self._known_drone_count()
+        if known < self.MIN_DRONES:
+            self._log_leader_block(f"drones connus {known}/{self.MIN_DRONES}")
+            return False
+
+        leader_food = self.inventory.get("food", 0)
+        if leader_food < self.LEADER_RITUAL_FOOD_MIN:
+            self._log_leader_block(f"food leader {leader_food}/{self.LEADER_RITUAL_FOOD_MIN}")
+            return False
+
+        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+        if not req:
+            return False
+
+        now = time.time()
+        same_level_known = 0
+        same_level_food_ready = 0
+        for drone_id, drone in self.registry.known_drones.items():
+            if now - drone.get("last_seen", 0) > 35:
+                continue
+            if drone.get("level", 0) != self.level:
+                continue
+            same_level_known += 1
+            food = drone.get("inventory", {}).get("food", 0)
+            if drone_id == self.drone_id:
+                same_level_food_ready += 1
+            elif food >= self.COLLECTOR_READY_FOOD_MIN:
+                same_level_food_ready += 1
+
+        target_group = self._target_group_size()
+        if same_level_known < target_group:
+            self._log_leader_block(f"drones meme niveau connus {same_level_known}/{target_group}")
+            return False
+        if same_level_food_ready < target_group:
+            self._log_leader_block(
+                f"drones avec food prete {same_level_food_ready}/{target_group} "
+                f"min_collecteur={self.COLLECTOR_READY_FOOD_MIN}"
+            )
+            return False
+
+        have = self.registry.total_known_stones()
+        need = self._planned_remaining_requirements()
+        for stone in self.STONES:
+            if have.get(stone, 0) < need.get(stone, 0):
+                self._log_leader_block(f"manque {stone} {have.get(stone, 0)}/{need.get(stone, 0)}")
+                return False
+        return True
+
+    def _tile_resource_count(self, stone):
+        if not self.vision:
+            return 0
+        return self.vision[0].count(stone)
+
+    def _deposit_all_stones_for_ritual(self):
+        deposited = False
+        for stone in self.STONES:
+            for _ in range(self.inventory.get(stone, 0)):
+                self.net.queue_command(f"Set {stone}")
+                deposited = True
+        if deposited:
+            print("[IA] Pierres deposees sur la case du leader.")
+            self.inventory_fresh = False
+            self.vision_fresh = False
+        return deposited
+
+    def _search_food_action(self):
+        for index, tile in enumerate(self.vision):
+            if "food" in tile:
+                self.movement.move_to_target(index)
+                self.net.queue_command("Take food")
+                return
+        self.net.queue_command("Forward")
+
     def think(self):
-        if self.command_queue or self.sent_commands:
+        if self.net.has_pending():
             return
 
-        if time.time() - self.last_connect_nbr_time > self.CONNECT_NBR_COOLDOWN:
-            self.queue_command("Connect_nbr")
+        self.ritual.set_level(self.level)
+
+        if not self.ritual.leader_locked and time.time() - self.last_connect_nbr_time > self.CONNECT_NBR_COOLDOWN:
+            self.net.queue_command("Connect_nbr")
             self.last_connect_nbr_time = time.time()
+            return
+
+        if self.ritual.committed_session and not (self.ritual.leader_locked and self._is_global_leader()):
+            self.ritual.cleanup()
+            best_session_id, best_session = self.ritual.best_ritual_session()
+            if best_session_id and best_session is not None:
+                self.ritual.committed_session = best_session_id
+                direction = best_session.get("last_direction", 0)
+                if direction == 0 and self.ritual.arrived_at_leader:
+                    self.ritual.broadcast_ritual_ready(
+                        best_session_id, self.inventory.get("food", 0)
+                    )
+                self.ritual.go_to_ritual_site(
+                    best_session,
+                    self._deposit_all_stones_for_ritual,
+                    self.inventory_fresh,
+                    self.net,
+                )
+            else:
+                if time.time() - self.last_fast_join_log > 2.0:
+                    print("[IA] RALLIEMENT: j'attends le prochain son du leader.", flush=True)
+                    self.last_fast_join_log = time.time()
+            self.inventory_fresh = False
+            self.vision_fresh = False
             return
 
         needs_refresh = False
         if not self.inventory_fresh:
-            self.queue_command("Inventory")
+            self.net.queue_command("Inventory")
             needs_refresh = True
         if not self.vision_fresh:
-            self.queue_command("Look")
+            self.net.queue_command("Look")
             needs_refresh = True
         if needs_refresh:
             return
 
-        current_food = self.inventory.get("food", 0)
+        self.ritual.cleanup()
+        self._log_leader_status()
+        if self.ritual.committed_session and self.ritual.committed_session not in self.ritual.ritual_sessions:
+            self.ritual.committed_session = None
+            self.ritual.my_ritual_session = None
 
-        if current_food < self.food_threshold:
-            self.state = DroneState.SEARCH_FOOD
-        elif self.state == DroneState.JOIN_ELEVATION:
-            pass
-        elif self._is_ready_for_elevation() or self._team_elevation():
+        current_food = self.inventory.get("food", 0)
+        req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
+        best_session_id, best_session = self.ritual.best_ritual_session()
+        known_count = self._known_drone_count()
+        is_leader = self._is_global_leader()
+        if self.ritual.leader_locked and is_leader:
             self.state = DroneState.ELEVATE
-        elif current_food > 35 and self.level < 8 and (time.time() - self.last_fork_time) > self.FORK_COOLDOWN:
+        elif self.ritual.committed_session:
+            self.state = DroneState.JOIN_ELEVATION
+        elif current_food < self.food_threshold:
+            self.state = DroneState.SEARCH_FOOD
+        elif known_count < self.MIN_DRONES and current_food >= self.FORK_FOOD_MIN and (time.time() - self.last_fork_time) > self.FORK_COOLDOWN:
             self.state = DroneState.FORK
+        elif not is_leader and current_food < self.COLLECTOR_FOOD_TARGET:
+            self.state = DroneState.SEARCH_FOOD
+        elif best_session_id and not is_leader:
+            if current_food < self.EMERGENCY_FOOD_MIN:
+                self.state = DroneState.RITUAL_FOOD
+            else:
+                self.ritual.committed_session = best_session_id
+                self.state = DroneState.JOIN_ELEVATION
+        elif req and self._global_ritual_conditions_ok():
+            self.state = DroneState.ELEVATE
+        elif is_leader:
+            self.state = DroneState.SEARCH_FOOD
         else:
             self.state = DroneState.SEARCH_STONES
+        if self.state in (DroneState.SEARCH_FOOD, DroneState.RITUAL_FOOD):
+            self._search_food_action()
 
-        if self.state == DroneState.SEARCH_FOOD:
-            for index, tile in enumerate(self.vision):
-                if "food" in tile:
-                    self.move_to_target(index)
-                    self.queue_command("Take food")
-                    break
-            else:
-                self.queue_command("Forward")
         elif self.state == DroneState.SEARCH_STONES:
-            missing = self._missing_stones()
-            if not missing:
-                self.queue_command("Forward")
-            else:
-                found = False
+            if current_food < self.COLLECTOR_FOOD_TARGET + 10:
                 for index, tile in enumerate(self.vision):
-                    for stone in missing:
-                        if stone in tile:
-                            self.move_to_target(index)
-                            self.queue_command(f"Take {stone}")
-                            found = True
-                            break
-                    if found:
+                    if "food" in tile:
+                        self.movement.move_to_target(index)
+                        self.net.queue_command("Take food")
+                        self.inventory_fresh = False
+                        self.vision_fresh = False
+                        return
+            missing = self._needed_global_stones_to_collect() or {stone: 1 for stone in self.STONES}
+            found = False
+            for index, tile in enumerate(self.vision):
+                for stone in missing:
+                    if stone in tile:
+                        self.movement.move_to_target(index)
+                        self.net.queue_command(f"Take {stone}")
+                        found = True
                         break
-                if not found:
-                    self.queue_command("Forward")
-                    self.queue_command("Left")
+                if found:
+                    break
+            if not found:
+                self.net.queue_command("Forward")
+                self.net.queue_command("Left")
+
         elif self.state == DroneState.FORK:
-            self.queue_command("Fork")
+            self.net.queue_command("Fork")
             self.last_fork_time = time.time()
             self.state = DroneState.SEARCH_FOOD
+
+        elif self.state == DroneState.JOIN_ELEVATION:
+            if best_session_id and best_session is not None:
+                self.ritual.committed_session = best_session_id
+                if best_session.get("last_direction", 0) == 0 and self.ritual.arrived_at_leader:
+                    self.ritual.broadcast_ritual_ready(best_session_id, self.inventory.get("food", 0))
+                self.ritual.go_to_ritual_site(
+                    best_session,
+                    self._deposit_all_stones_for_ritual,
+                    self.inventory_fresh,
+                    self.net,
+                )
+            else:
+                if time.time() - self.last_fast_join_log > 2.0:
+                    print("[IA] RALLIEMENT: j'attends le prochain son du leader.", flush=True)
+                    self.last_fast_join_log = time.time()
+
         elif self.state == DroneState.ELEVATE:
-            req = self.ELEVATION_REQUIREMENTS.get(self.level + 1)
-            if not req:
+            if not req or not self._is_global_leader():
+                self.net.queue_command("Look")
+                return
+            if not self.ritual.leader_locked and not self._global_ritual_conditions_ok():
+                self.net.queue_command("Look")
                 return
 
             players_on_tile = self.vision[0].count("player") if self.vision else 0
+            session_id = f"{self.team_name}:ritual:{self.level + 1}:{self.drone_id}"
+            if session_id in self.ritual.ignored_ritual_sessions and not self.ritual.leader_locked:
+                self.state = DroneState.SEARCH_FOOD
+                self._search_food_action()
+                self.inventory_fresh = False
+                self.vision_fresh = False
+                return
 
-            if players_on_tile < req[0]:
-                if self.broadcast.can_announce():
-                    payload = {
-                        "players": players_on_tile,
-                        "required": req[0],
-                        "food": self.inventory.get("food", 0),
-                        "missing": self._missing_stones(),
-                        "leader_inventory": self.inventory,
-                    }
-                    self.queue_command(
-                        f"Broadcast {self.broadcast.build_elevation_packet(self.level + 1, payload)}"
-                    )
+            self.ritual.broadcast_ritual_site(
+                req, self._target_group_size(),
+                self.inventory.get("food", 0),
+                self._known_drone_count(),
+            )
+            session_id = self.ritual.my_ritual_session
+            ready_count = self.ritual.ritual_ready_count(session_id) if session_id else 1
+            target_group = self._target_group_size()
+            required_players = max(self.MIN_DRONES, target_group, req[0])
+
+            enough_stones_on_tile = all(
+                self._tile_resource_count(stone) >= req[i + 1]
+                for i, stone in enumerate(self.STONES)
+            )
+
+            if players_on_tile >= required_players and enough_stones_on_tile:
+                print(
+                    f"[LEADER] Conditions locales OK ({players_on_tile} joueurs sur case, ready={ready_count}), "
+                    f"lancement incantation groupe.",
+                    flush=True,
+                )
+                self.net.queue_command("Incantation")
             else:
-                for i, stone in enumerate(self.STONES):
-                    for _ in range(req[i + 1]):
-                        self.queue_command(f"Set {stone}")
-                self.queue_command("Incantation")
+                print(
+                    f"[LEADER] Attente regroupement STRICT joueurs_sur_case={players_on_tile}/{required_players} "
+                    f"ready={ready_count} stones={enough_stones_on_tile}",
+                    flush=True,
+                )
+                self.net.queue_command("Look")
 
         self.inventory_fresh = False
         self.vision_fresh = False

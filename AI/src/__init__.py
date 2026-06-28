@@ -3,3 +3,7 @@ from .zappy_connection import connect_client
 from .zappy_agent import ZappyAI
 from .zappy_ai_manager import ZappyAIManager
 from .zappy_broadcast import ZappyBroadcastCoordinator
+from .zappy_network import ZappyNetwork
+from .zappy_movement import ZappyMovement
+from .zappy_drone_registry import ZappyDroneRegistry
+from .zappy_ritual import ZappyRitual
