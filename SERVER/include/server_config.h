@@ -87,6 +87,7 @@ typedef struct client_s {
     int level;
     inventory_t inventory;
     long long death_time;
+    int is_incanting;
 } client_t;
 
 typedef struct server_s {

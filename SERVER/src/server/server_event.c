@@ -17,22 +17,30 @@ static long long get_command_time(server_t *server, const char *cmd)
 {
     long long cycles = 7;
 
-    if (strncmp(cmd, "Fork", 4) == 0 || strncmp(cmd, "Incantation", 11) == 0)
+    if (strncmp(cmd, "Fork", 4) == 0)
         cycles = 42;
+    if (strncmp(cmd, "Incantation", 11) == 0)
+        cycles = 300;
     return get_time_ms() + ((cycles * 1000) / server->config.freq);
 }
 
 static void notify_incantation_players(server_t *server, client_t *client)
 {
     int i;
+    int orig_level = client->level;
 
     for (i = 0; i < server->client_count; i++) {
-        if (server->clients[i].type == CLIENT_AI &&
-            server->clients[i].pos_x == client->pos_x &&
-            server->clients[i].pos_y == client->pos_y &&
-            server->clients[i].level == client->level) {
-            send_to_client(&server->clients[i], "Elevation under way\n");
-        }
+        if (server->clients[i].type != CLIENT_AI)
+            continue;
+        if (server->clients[i].pos_x != client->pos_x)
+            continue;
+        if (server->clients[i].pos_y != client->pos_y)
+            continue;
+        if (server->clients[i].level != orig_level)
+            continue;
+        send_to_client(&server->clients[i], "Elevation underway\n");
+        if (&server->clients[i] != client)
+            server->clients[i].is_incanting = 1;
     }
 }
 
@@ -53,6 +61,14 @@ static void handle_command(server_t *server, client_t *client, char *line)
 {
     long long exec_time;
 
+    if (client->is_incanting) {
+        send_to_client(client, "ko\n");
+        return;
+    }
+    if (strcmp(line, "Connect_nbr") == 0) {
+        cmd_connect_nbr(server, client);
+        return;
+    }
     if (strcmp(line, "Incantation") == 0) {
         if (!pre_check_incantation(server, client)) {
             send_to_client(client, "ko\n");
@@ -86,6 +102,8 @@ void handle_client_read(server_t *server, int i)
 
     if (buffer_read(client) == -1) {
         printf("[SERVER] Client #%d disconnected\n", client->id);
+        if (client->type == CLIENT_AI)
+            gui_notify_pdi(server, client);
         disconnect_client(server, i);
         return;
     }

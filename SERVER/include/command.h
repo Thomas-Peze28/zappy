@@ -20,15 +20,14 @@ typedef struct incantation_req_s {
     int thystame;
 } incantation_req_t;
 
-static const incantation_req_t REQS[8] = {
-    {0, 0, 0, 0, 0, 0, 0},
+static const incantation_req_t REQS[7] = {
     {1, 1, 0, 0, 0, 0, 0},
     {2, 1, 1, 1, 0, 0, 0},
     {2, 2, 0, 1, 0, 2, 0},
     {4, 1, 1, 2, 0, 1, 0},
     {4, 1, 2, 1, 3, 0, 0},
     {6, 1, 2, 3, 0, 1, 0},
-    {6, 2, 2, 2, 2, 2, 1}
+    {6, 2, 2, 2, 2, 2, 1},
 };
 
 typedef struct command_entry_s {
@@ -56,5 +55,7 @@ void cmd_broadcast(server_t *server, client_t *client, const char *text);
 void cmd_look(server_t *server, client_t *client);
 void cmd_incantation(server_t *server, client_t *client);
 void cmd_fork(server_t *server, client_t *client);
+void cmd_eject(server_t *server, client_t *client);
+void cmd_connect_nbr(server_t *server, client_t *client);
 
 #endif

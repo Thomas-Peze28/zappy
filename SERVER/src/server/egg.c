@@ -17,15 +17,15 @@ void update_eggs(server_t *server)
     long long now = get_time_ms();
 
     for (int i = 0; i < server->egg_count; i++) {
-        if (!server->eggs[i].is_hatched && now >= server->eggs[i].hatch_time) {
+        if (!server->eggs[i].is_hatched && server->eggs[i].hatch_time > 0
+            && now >= server->eggs[i].hatch_time) {
             server->eggs[i].is_hatched = 1;
-            gui_notify_eht(server, server->eggs[i].id);
         }
     }
 }
 
-static void create_egg(
-    server_t *server, const char *team, int player_id, int hatched)
+static void create_egg(server_t *server, const char *team,
+    int player_id, int hatched)
 {
     egg_t *egg = &server->eggs[server->egg_count];
 
@@ -51,17 +51,16 @@ egg_t *find_available_egg(server_t *server, const char *team)
 {
     for (int i = 0; i < server->egg_count; i++) {
         if (server->eggs[i].is_hatched &&
-            strcmp(server->eggs[i].team_name, team) == 0) {
+            strcmp(server->eggs[i].team_name, team) == 0)
             return &server->eggs[i];
-        }
     }
     return NULL;
 }
 
 void hatch_egg(server_t *server, egg_t *egg)
 {
+    (void)server;
     egg->is_hatched = 1;
-    gui_notify_eht(server, egg->id);
 }
 
 void gui_send_all_eggs(server_t *server, client_t *gui)
@@ -69,11 +68,9 @@ void gui_send_all_eggs(server_t *server, client_t *gui)
     char buf[MAX_CMD_LEN];
 
     for (int i = 0; i < server->egg_count; i++) {
-        snprintf(buf, MAX_CMD_LEN, "enw %d %d %d %d\n",
-            server->eggs[i].id,
-            0,
-            server->eggs[i].pos_x,
-            server->eggs[i].pos_y);
+        snprintf(buf, MAX_CMD_LEN, "enw #%d #%d %d %d\n",
+            server->eggs[i].id, 0,
+            server->eggs[i].pos_x, server->eggs[i].pos_y);
         send_to_client(gui, buf);
     }
 }
