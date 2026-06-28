@@ -7,7 +7,7 @@
 
 NAME    =   zappy_server
 
-CC      =  	epiclang
+CC ?= gcc
 CFLAGS  =   -Wall -Wextra -Werror
 IFLAGS  =   -I include
 
@@ -48,7 +48,8 @@ SRC     =   src/main.c                      \
 			src/gui/time.c \
 			src/server/end_game.c \
 			src/server/egg.c \
-			src/gui/notify_client.c
+			src/gui/notify_client.c \
+			src/command/cmd_eject.c
 
 OBJ     =   $(SRC:.c=.o)
 

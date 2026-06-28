@@ -34,7 +34,7 @@ int calculate_sound_direction(server_t *server, client_t *src, client_t *dst)
         return 0;
     dx = get_toric_delta(src->pos_x, dst->pos_x, server->config.width);
     dy = get_toric_delta(dst->pos_y, src->pos_y, server->config.height);
-    angle = atan2(dx, -dy);
+    angle = atan2(dy, dx);
     if (angle < 0)
         angle += 2.0 * M_PI;
     final_dir = zappy_abs_dirs[(int)round(angle / (M_PI / 4.0)) % 8];
@@ -53,11 +53,11 @@ void cmd_broadcast(server_t *server, client_t *client, const char *text)
 
     for (i = 0; i < server->client_count; i++) {
         receiver = &server->clients[i];
-        if (receiver->type == CLIENT_AI && receiver->fd != client->fd) {
-            dir = calculate_sound_direction(server, client, receiver);
-            snprintf(buf, sizeof(buf), "message %d, %s\n", dir, text);
-            send_to_client(receiver, buf);
-        }
+        if (receiver->type != CLIENT_AI)
+            continue;
+        dir = calculate_sound_direction(server, client, receiver);
+        snprintf(buf, sizeof(buf), "message %d, %s\n", dir, text);
+        send_to_client(receiver, buf);
     }
     gui_notify_pbc(server, client, text);
     send_to_client(client, "ok\n");

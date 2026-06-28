@@ -64,8 +64,9 @@ void handle_gui_command(server_t *server, int idx)
     client_t *gui = &server->clients[idx];
     char *line = buffer_get_line(gui);
 
-    if (line == NULL)
-        return;
-    if (!route_gui_command(server, gui, line))
-        send_to_client(gui, "suc\n");
+    while (line != NULL) {
+        if (!route_gui_command(server, gui, line))
+            send_to_client(gui, "suc\n");
+        line = buffer_get_line(gui);
+    }
 }

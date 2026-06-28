@@ -40,9 +40,8 @@ void send_to_client(client_t *client, const char *msg)
     int len = strlen(msg);
     int available = BUFFER_SIZE - client->write_len;
 
-    if (len > available) {
+    if (len > available)
         return;
-    }
     memcpy(client->write_buf + client->write_len, msg, len);
     client->write_len += len;
     buffer_write(client);
@@ -53,7 +52,7 @@ int get_team_slots(server_t *server, const char *team)
     int slots = 0;
 
     for (int i = 0; i < server->egg_count; i++) {
-        if (!server->eggs[i].is_hatched &&
+        if (server->eggs[i].is_hatched &&
             strcmp(server->eggs[i].team_name, team) == 0)
             slots++;
     }
@@ -85,8 +84,7 @@ static void send_ai_info(server_t *server, int idx, const char *team)
     send_to_client(&server->clients[idx], buf);
 }
 
-static void spawn_player(server_t *server, client_t *client,
-    egg_t *egg)
+static void spawn_player(server_t *server, client_t *client, egg_t *egg)
 {
     long long now = get_time_ms();
     long long initial_life;
@@ -111,6 +109,8 @@ static void handle_ai(server_t *server, int idx, const char *team)
         server->clients[idx].pending_disconnect = 1;
         return;
     }
+    egg->is_hatched = 0;
+    gui_notify_ebo(server, egg);
     server->clients[idx].type = CLIENT_AI;
     strncpy(server->clients[idx].team_name, team, TEAM_NAME_LEN - 1);
     spawn_player(server, &server->clients[idx], egg);
