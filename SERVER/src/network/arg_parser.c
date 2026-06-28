@@ -7,6 +7,7 @@
 
 #include "server_config.h"
 #include <stddef.h>
+#include <stdio.h>
 
 void init_config(server_config_t *config)
 {
@@ -24,18 +25,26 @@ static int is_valid_positive(int value)
     return value > 0;
 }
 
+static int print_err(const char *msg)
+{
+    fprintf(stderr, "%s", msg);
+    return 0;
+}
+
 static int check_required_fields(server_config_t *config)
 {
     if (!is_valid_positive(config->port))
-        return 0;
+        return print_err("[ERROR] Invalid or missing port (-p).\n");
     if (!is_valid_positive(config->width))
-        return 0;
+        return print_err("[ERROR] Invalid or missing width (-x).\n");
     if (!is_valid_positive(config->height))
-        return 0;
+        return print_err("[ERROR] Invalid or missing height (-y).\n");
     if (!is_valid_positive(config->clients_nb))
-        return 0;
+        return print_err("[ERROR] Invalid clients number (-c).\n");
+    if (!is_valid_positive(config->freq))
+        return print_err("[ERROR] Invalid or missing frequency (-f).\n");
     if (config->team_count == 0 || config->team_names == NULL)
-        return 0;
+        return print_err("[ERROR] At least one team name is required (-n).\n");
     return 1;
 }
 

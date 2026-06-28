@@ -13,14 +13,20 @@ static void get_push_delta(client_t *ejector, int *dx, int *dy)
 {
     *dx = 0;
     *dy = 0;
-    if (ejector->orientation == NORTH)
-        *dy = -1;
-    else if (ejector->orientation == EAST)
-        *dx = 1;
-    else if (ejector->orientation == SOUTH)
-        *dy = 1;
-    else if (ejector->orientation == WEST)
-        *dx = -1;
+    switch (ejector->orientation) {
+        case NORTH:
+            *dy = -1;
+            break;
+        case EAST:
+            *dx = 1;
+            break;
+        case SOUTH:
+            *dy = 1;
+            break;
+        case WEST:
+            *dx = -1;
+            break;
+    }
 }
 
 static int get_eject_direction(client_t *ejector, client_t *ejected)

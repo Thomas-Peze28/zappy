@@ -57,6 +57,23 @@ static int pre_check_incantation(server_t *server, client_t *client)
     return 1;
 }
 
+static int handle_immediate_cmd(server_t *server, client_t *client, char *line)
+{
+    if (strcmp(line, "Connect_nbr") == 0) {
+        cmd_connect_nbr(server, client);
+        return 1;
+    }
+    if (strcmp(line, "Incantation") == 0) {
+        if (!pre_check_incantation(server, client)) {
+            send_to_client(client, "ko\n");
+            return 1;
+        }
+        notify_incantation_players(server, client);
+        gui_notify_pic(server, client);
+    }
+    return 0;
+}
+
 static void handle_command(server_t *server, client_t *client, char *line)
 {
     long long exec_time;
@@ -65,18 +82,8 @@ static void handle_command(server_t *server, client_t *client, char *line)
         send_to_client(client, "ko\n");
         return;
     }
-    if (strcmp(line, "Connect_nbr") == 0) {
-        cmd_connect_nbr(server, client);
+    if (handle_immediate_cmd(server, client, line))
         return;
-    }
-    if (strcmp(line, "Incantation") == 0) {
-        if (!pre_check_incantation(server, client)) {
-            send_to_client(client, "ko\n");
-            return;
-        }
-        notify_incantation_players(server, client);
-        gui_notify_pic(server, client);
-    }
     exec_time = get_command_time(server, line);
     if (queue_command(client, line, exec_time) == -1)
         return;
