@@ -20,6 +20,10 @@ SRC_AI     =   src/zappy_ai.py \
 			src/zappy_broadcast.py \
 			src/zappy_connection.py \
 			src/zappy_state.py \
+			src/zappy_drone_registry.py \
+			src/zappy_network.py \
+			src/zappy_ritual.py \
+			src/zappy_movement.py \
 			src/__init__.py \
 
 NAME    =   zappy_ai

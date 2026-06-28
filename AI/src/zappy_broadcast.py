@@ -59,7 +59,6 @@ class ZappyBroadcastCoordinator:
         )
 
     def build_ritual_site_packet(self, level, required_players, leader_food, known=1):
-        # Session stable: all followers lock on the single leader global ritual call.
         session = f"{self.team_name}:global-ritual:{self.leader_id}"
         return self._build_packet(
             "ritual-site",
@@ -160,3 +159,4 @@ class ZappyBroadcastCoordinator:
         self.active_session = session_id
         self.last_seen_session = now
         return True
+    

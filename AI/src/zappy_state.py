@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class DroneState(Enum):
     SEARCH_FOOD = 1
     SEARCH_STONES = 2

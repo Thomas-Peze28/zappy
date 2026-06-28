@@ -82,7 +82,7 @@ class ZappyAIManager:
                     self.disconnect()
                     break
                 if readable:
-                    self.client.receive_data()
+                    self.client.net.receive_data()
                 if self.client:
                     self.client.think()
 
