@@ -101,7 +101,7 @@ int Zappy::Core::seg(std::string message, Zappy::Game &game, Zappy::Network &ser
     (void)game;
     (void)server;
     if (sscanf(message.c_str(), "seg %s", teamName.data()) == 1) {
-        game.setWinningTeam(teamName);
+        game.setWinningTeam(teamName.data());
         game.setGameOver(true);
     }
     return 0;
